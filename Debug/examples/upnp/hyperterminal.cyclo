@@ -1,8 +1,0 @@
-../examples/upnp/hyperterminal.c:28:6:UserLED_Control_Init	2
-../examples/upnp/hyperterminal.c:47:6:Int2Str	3
-../examples/upnp/hyperterminal.c:70:9:Str2Int	29
-../examples/upnp/hyperterminal.c:134:9:GetIntegerInput	6
-../examples/upnp/hyperterminal.c:160:6:GetInputString	8
-../examples/upnp/hyperterminal.c:188:9:SerialKeyPressed	2
-../examples/upnp/hyperterminal.c:197:7:STRTOK	5
-../examples/upnp/hyperterminal.c:234:6:Main_Menu	20

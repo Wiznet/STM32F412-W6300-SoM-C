@@ -1,6 +1,0 @@
-../Libraries/ioLibrary_Driver/Application/loopback/loopback.c:298:8:set_loopback_mode_W6x00	16	static
-../Libraries/ioLibrary_Driver/Application/loopback/loopback.c:303:8:check_loopback_mode_W6x00	4	static
-../Libraries/ioLibrary_Driver/Application/loopback/loopback.c:318:9:loopback_tcps	56	static
-../Libraries/ioLibrary_Driver/Application/loopback/loopback.c:577:9:loopback_tcpc	64	static
-../Libraries/ioLibrary_Driver/Application/loopback/loopback.c:839:9:loopback_udps	48	static
-../Libraries/ioLibrary_Driver/Application/loopback/loopback.c:950:9:loopback_udpc	64	static

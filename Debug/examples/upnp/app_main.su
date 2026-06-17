@@ -1,5 +1,0 @@
-../examples/upnp/app_main.c:105:13:cb_dhcp_assign	104	static
-../examples/upnp/app_main.c:120:13:cb_dhcp_conflict	8	static
-../examples/upnp/app_main.c:130:13:setUserLEDStatus	16	static
-../examples/upnp/app_main.c:140:6:app_timer_tick	8	static
-../examples/upnp/app_main.c:157:6:app_main	112	static

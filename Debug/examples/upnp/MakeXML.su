@@ -1,5 +1,0 @@
-../examples/upnp/MakeXML.c:71:6:MakePOSTHeader	56	static
-../examples/upnp/MakeXML.c:100:6:MakeGETHeader	40	static
-../examples/upnp/MakeXML.c:117:6:MakeSubscribe	72	static
-../examples/upnp/MakeXML.c:140:6:MakeSOAPAddControl	48	static
-../examples/upnp/MakeXML.c:172:6:MakeSOAPDeleteControl	48	static
