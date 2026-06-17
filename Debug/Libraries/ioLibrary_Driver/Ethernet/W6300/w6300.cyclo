@@ -1,0 +1,12 @@
+../Libraries/ioLibrary_Driver/Ethernet/W6300/w6300.c:57:6:WIZCHIP_WRITE	1
+../Libraries/ioLibrary_Driver/Ethernet/W6300/w6300.c:82:10:WIZCHIP_READ	1
+../Libraries/ioLibrary_Driver/Ethernet/W6300/w6300.c:109:6:WIZCHIP_WRITE_BUF	1
+../Libraries/ioLibrary_Driver/Ethernet/W6300/w6300.c:134:6:WIZCHIP_READ_BUF	1
+../Libraries/ioLibrary_Driver/Ethernet/W6300/w6300.c:160:10:getSn_TX_FSR	2
+../Libraries/ioLibrary_Driver/Ethernet/W6300/w6300.c:170:10:getSn_RX_RSR	2
+../Libraries/ioLibrary_Driver/Ethernet/W6300/w6300.c:180:6:wiz_send_data	1
+../Libraries/ioLibrary_Driver/Ethernet/W6300/w6300.c:221:6:wiz_recv_data	2
+../Libraries/ioLibrary_Driver/Ethernet/W6300/w6300.c:234:6:wiz_recv_ignore	1
+../Libraries/ioLibrary_Driver/Ethernet/W6300/w6300.c:240:6:wiz_delay_ms	3
+../Libraries/ioLibrary_Driver/Ethernet/W6300/w6300.c:255:6:wiz_mdio_write	2
+../Libraries/ioLibrary_Driver/Ethernet/W6300/w6300.c:262:10:wiz_mdio_read	2

@@ -1,0 +1,12 @@
+../port/wizchip_qspi.c:27:6:HAL_QSPI_TxCpltCallback	16	static
+../port/wizchip_qspi.c:32:6:HAL_QSPI_RxCpltCallback	16	static
+../port/wizchip_qspi.c:40:20:wizchip_select	4	static
+../port/wizchip_qspi.c:41:20:wizchip_deselect	4	static
+../port/wizchip_qspi.c:46:13:w6300_qspi_make_cmd	24	static
+../port/wizchip_qspi.c:110:6:W6300_QspiWriteByte	96	static
+../port/wizchip_qspi.c:142:6:W6300_QspiReadByte	96	static
+../port/wizchip_qspi.c:173:6:wizchip_reset	8	static
+../port/wizchip_qspi.c:185:6:wizchip_initialize	40	static
+../port/wizchip_qspi.c:225:6:network_initialize	8	static
+../port/wizchip_qspi.c:230:6:print_network_information	40	static
+../port/wizchip_qspi.c:280:6:print_ipv6_addr	16	static

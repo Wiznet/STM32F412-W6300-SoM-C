@@ -1,0 +1,2 @@
+../Libraries/ioLibrary_Driver/Application/multicast/multicast.c:7:9:multicast_loopback	64	static
+../Libraries/ioLibrary_Driver/Application/multicast/multicast.c:84:9:multicast_recv	64	static

@@ -1,0 +1,3 @@
+../examples/netbios/netbios.c:81:12:netbios_name_decoding	40	static
+../examples/netbios/netbios.c:131:16:checksum	40	static
+../examples/netbios/netbios.c:162:6:do_netbios	88	static

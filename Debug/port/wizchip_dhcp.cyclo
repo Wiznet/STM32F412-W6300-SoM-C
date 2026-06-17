@@ -1,0 +1,5 @@
+../port/wizchip_dhcp.c:22:13:on_dhcp_assign	1
+../port/wizchip_dhcp.c:39:13:on_dhcp_conflict	1
+../port/wizchip_dhcp.c:51:6:wizchip_dhcp_init	1
+../port/wizchip_dhcp.c:66:9:wizchip_dhcp_run	6
+../port/wizchip_dhcp.c:104:6:wizchip_dhcp_time_tick	1

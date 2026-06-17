@@ -1,0 +1,10 @@
+../examples/pppoe/PPPoE.c:89:6:set_pppinfo	64	static
+../examples/pppoe/PPPoE.c:144:6:ppp_send	24	static
+../examples/pppoe/PPPoE.c:191:6:ppp_recv	304	static
+../examples/pppoe/PPPoE.c:758:6:do_discovery	16	static
+../examples/pppoe/PPPoE.c:812:6:do_lcp	8	static
+../examples/pppoe/PPPoE.c:856:6:do_lcp_echo	8	static
+../examples/pppoe/PPPoE.c:897:9:do_lcp_terminate	16	static
+../examples/pppoe/PPPoE.c:987:6:do_pap	16	static
+../examples/pppoe/PPPoE.c:1025:6:do_ipcp	8	static
+../examples/pppoe/PPPoE.c:1059:9:ppp_start	32	static
