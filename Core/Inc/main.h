@@ -67,7 +67,7 @@ void Error_Handler(void);
 /* ============================================================ */
 /* Select ONE example to build                                   */
 /* ============================================================ */
-#define EXAMPLE_DHCP_DNS
+//#define EXAMPLE_DHCP_DNS
 //#define EXAMPLE_LOOPBACK
 //#define EXAMPLE_UDP
 //#define EXAMPLE_UDP_MULTICAST
@@ -80,7 +80,7 @@ void Error_Handler(void);
 //#define EXAMPLE_PPPOE
 //#define EXAMPLE_NETWORK_INSTALL
 //#define EXAMPLE_UPNP
-//#define EXAMPLE_TCP_CLIENT_OVER_SSL
+#define EXAMPLE_TCP_CLIENT_OVER_SSL
 //#define EXAMPLE_TCP_SERVER_OVER_SSL
 
 /* USER CODE END Private defines */

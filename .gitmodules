@@ -1,3 +1,9 @@
 [submodule "Libraries/ioLibrary_Driver"]
 	path = Libraries/ioLibrary_Driver
 	url = https://github.com/Wiznet/ioLibrary_Driver
+[submodule "Libraries/mbedtls"]
+	path = Libraries/mbedtls
+	url = https://github.com/Mbed-TLS/mbedtls.git
+[submodule "Libraries/cryptoauthlib"]
+	path = Libraries/cryptoauthlib
+	url = https://github.com/MicrochipTech/cryptoauthlib.git
