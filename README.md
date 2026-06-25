@@ -215,7 +215,7 @@ DMA for efficiency.
 
 ## License
 
-This project is licensed under the BSD-3-Clause license. See `LICENSE`.
+This project is licensed under the MIT License. See `LICENSE`.
 
 Third-party components keep their own licenses:
 
