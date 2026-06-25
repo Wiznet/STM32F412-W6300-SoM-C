@@ -33,6 +33,7 @@
 /* Network mode: NETINFO_DHCP or NETINFO_STATIC                  */
 /* ============================================================ */
 #define NET_MODE    NETINFO_DHCP
+//#define NET_MODE    NETINFO_STATIC
 
 /* ============================================================ */
 /* Configuration                                                 */
