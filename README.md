@@ -6,8 +6,9 @@ Ethernet examples for an STM32F412-based W6300 SoM board using
 ## Hardware
 
 - STM32F412 + W6300 SoM
-- WIZnet W6300 hardwired TCP/IP Ethernet chip (QSPI interface)
-- Microchip ATECC608C-TNGTLS secure element (I2C2, used by TLS examples)
+  - STM32F412ZG MCU (1MB Flash, 256KB SRAM)
+  - W6300 hardwired TCP/IP Ethernet (QSPI interface)
+  - ATECC608C-TNGTLS secure element (I2C2, used by TLS examples)
 - USART3 serial output at 115200 bps
 
 ## Development Environment
@@ -81,7 +82,7 @@ Select exactly one example macro in `Core/Inc/main.h`.
 | `pppoe` | `EXAMPLE_PPPOE` | PPPoE client connection |
 | `network_install` | `EXAMPLE_NETWORK_INSTALL` | Network init, PHY link check, and ping test |
 | `upnp` | `EXAMPLE_UPNP` | UPnP IGD discovery and port forwarding |
-| `tcp_client_over_ssl` | `EXAMPLE_TCP_CLIENT_OVER_SSL` | TLS 1.2 client (mbedTLS + ATECC608C), supports mTLS |
+| `tcp_client_over_ssl` | `EXAMPLE_TCP_CLIENT_OVER_SSL` | TLS 1.2 echo client (mbedTLS + ATECC608C), supports mTLS |
 | `tcp_server_over_ssl` | `EXAMPLE_TCP_SERVER_OVER_SSL` | TLS 1.2 echo server (mbedTLS + ATECC608C) |
 
 ### TLS Examples
