@@ -22,18 +22,9 @@ Supports both **DHCP** and **static IP**.
 
 ## Setup
 
-### Required Source Files
-
-Copy the following from PICO-C `examples/upnp/`:
-
-- `src/UPnP.c`, `src/MakeXML.c`, `src/hyperterminal.c`
-- `inc/UPnP.h`, `inc/MakeXML.h`, `inc/hyperterminal.h`
-
-Then modify `UPnP.c`:
-- Remove `#include "pico/time.h"`
-- Replace all `sleep_ms(...)` with `HAL_Delay(...)`
-
-Add both `src/` and `inc/` directories to Source Location and Include Path in CubeIDE.
+The UPnP source files are already included in this example directory and the
+CubeIDE project source path. If you recreate the project, add `examples/upnp`
+to the source and include paths.
 
 ## How to Use
 
@@ -52,17 +43,8 @@ Add both `src/` and `inc/` directories to Source Location and Include Path in Cu
 //#define NET_MODE    NETINFO_STATIC
 ```
 
-3. Add the timer tick to `SysTick_Handler()` in `stm32f4xx_it.c`:
-
-```c
-void SysTick_Handler(void)
-{
-    HAL_IncTick();
-
-    extern void app_timer_tick(void);
-    app_timer_tick();
-}
-```
+3. `Core/Src/stm32f4xx_it.c` already calls `app_timer_tick()` from
+`SysTick_Handler()`, which drives DHCP and UPnP timeout handling.
 
 4. Build, flash, and open a serial terminal (115200 bps).
 
@@ -98,10 +80,10 @@ Windows Hyper Terminal.
 
 The following can be modified in `app_main.c`:
 
-- `NET_MODE` — `NETINFO_DHCP` or `NETINFO_STATIC`
-- `g_net_info` — MAC, static IP, gateway, subnet
-- `PORT_TCP` / `PORT_UDP` — Loopback ports (default: 8000 / 5000)
-- `SOCKET_UPNP` — Base socket number for UPnP
+- `NET_MODE` - `NETINFO_DHCP` or `NETINFO_STATIC`
+- `g_net_info` - MAC, static IP, gateway, subnet
+- `PORT_TCP` / `PORT_UDP` - Loopback ports (default: 8000 / 5000)
+- `SOCKET_UPNP` - Base socket number for UPnP
 
 ## Note
 

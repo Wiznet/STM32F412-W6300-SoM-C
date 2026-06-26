@@ -2,13 +2,13 @@
 
 ## Overview
 
-Echo-back loopback test for the STM32F412 + W6300 SoM. Any data received is sent back to the sender. This is the most basic network connectivity test — if loopback works, the W6300 QSPI link and socket layer are functioning correctly.
+Echo-back loopback test for the STM32F412 + W6300 SoM. Any data received is sent back to the sender. This is the most basic network connectivity test: if loopback works, the W6300 QSPI link and socket layer are functioning correctly.
 
 Three modes available (uncomment one at a time in the main loop):
 
-- **TCP Server** (default) — listens on port 5000
-- **TCP Client** — connects to a remote server and echoes
-- **UDP** — receives UDP packets and echoes back
+- **TCP Server** (default) - listens on port 5000
+- **TCP Client** - connects to a remote server and echoes
+- **UDP** - receives UDP packets and echoes back
 
 Supports both **DHCP** and **static IP**.
 
@@ -45,26 +45,17 @@ Supports both **DHCP** and **static IP**.
 
 ```c
 /* TCP Server (default) */
-loopback_tcps(SOCKET_LOOPBACK, g_loopback_buf, PORT_TCP_SERVER);
+loopback_tcps(SOCKET_LOOPBACK, g_loopback_buf, PORT_LOOPBACK);
 
 /* TCP Client */
 // loopback_tcpc(SOCKET_LOOPBACK, g_loopback_buf, g_tcp_client_destip, PORT_TCP_CLIENT_DEST);
 
 /* UDP */
-// loopback_udps(SOCKET_LOOPBACK, g_loopback_buf, PORT_UDP);
+// loopback_udps(SOCKET_LOOPBACK, g_loopback_buf, PORT_LOOPBACK);
 ```
 
-4. When using DHCP, add the timer tick to `SysTick_Handler()` in `stm32f4xx_it.c`:
-
-```c
-void SysTick_Handler(void)
-{
-    HAL_IncTick();
-
-    extern void app_timer_tick(void);
-    app_timer_tick();
-}
-```
+4. `Core/Src/stm32f4xx_it.c` already calls `app_timer_tick()` from
+`SysTick_Handler()`, which drives DHCP timeout handling.
 
 5. Build, flash, and test with [Hercules](https://www.hw-group.com/software/hercules-setup-utility).
 
@@ -88,7 +79,7 @@ QSPI DMA threshold: 16 bytes
 
 The following can be modified in `app_main.c`:
 
-- `NET_MODE` — `NETINFO_DHCP` or `NETINFO_STATIC`
-- `g_net_info` — MAC, static IP, gateway, subnet
-- `g_tcp_client_destip` — TCP Client destination IP
-- `PORT_TCP_SERVER` / `PORT_TCP_CLIENT_DEST` / `PORT_UDP` — Port numbers
+- `NET_MODE` - `NETINFO_DHCP` or `NETINFO_STATIC`
+- `g_net_info` - MAC, static IP, gateway, subnet
+- `g_tcp_client_destip` - TCP Client destination IP
+- `PORT_LOOPBACK` / `PORT_TCP_CLIENT_DEST` - Port numbers

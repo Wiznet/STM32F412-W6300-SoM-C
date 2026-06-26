@@ -44,24 +44,15 @@ Supports both **DHCP** and **static IP**.
 3. Set the MQTT broker IP in `app_main.c`:
 
 ```c
-static uint8_t g_mqtt_broker_ip[4] = {192, 168, 11, 3};
+static uint8_t g_mqtt_broker_ip[4] = {192, 168, 11, 2};
 ```
 
-4. Add the MQTT library to the build:
-   - Source Location: `Libraries/ioLibrary_Driver/Internet/MQTT` and `Libraries/ioLibrary_Driver/Internet/MQTTPacket`
-   - Include Path: `../Libraries/ioLibrary_Driver/Internet/MQTT`, `../Libraries/ioLibrary_Driver/Internet/MQTTPacket/src`
+4. The CubeIDE project already includes the ioLibrary MQTT source. If you
+recreate the project, add `Libraries/ioLibrary_Driver/Internet/MQTT` to the
+source and include paths.
 
-5. Add the timer tick to `SysTick_Handler()` in `stm32f4xx_it.c`:
-
-```c
-void SysTick_Handler(void)
-{
-    HAL_IncTick();
-
-    extern void app_timer_tick(void);
-    app_timer_tick();
-}
-```
+5. `Core/Src/stm32f4xx_it.c` already calls `app_timer_tick()` from
+`SysTick_Handler()`, which drives DHCP and MQTT timing.
 
 6. Start the Mosquitto broker on your PC:
 
@@ -117,15 +108,15 @@ Hello, World!
 
 The following can be modified in `app_main.c`:
 
-- `NET_MODE` — `NETINFO_DHCP` or `NETINFO_STATIC`
-- `g_net_info` — MAC, static IP, gateway, subnet
-- `g_mqtt_broker_ip` — MQTT broker IP address
-- `PORT_MQTT` — Broker port (default: 1883)
-- `MQTT_CLIENT_ID` — Client identifier
-- `MQTT_USERNAME` / `MQTT_PASSWORD` — Broker credentials
-- `MQTT_PUBLISH_TOPIC` / `MQTT_SUBSCRIBE_TOPIC` — Topic names
-- `MQTT_PUBLISH_PAYLOAD` — Message content
-- `MQTT_PUBLISH_PERIOD` — Publish interval in ms (default: 10000)
+- `NET_MODE` - `NETINFO_DHCP` or `NETINFO_STATIC`
+- `g_net_info` - MAC, static IP, gateway, subnet
+- `g_mqtt_broker_ip` - MQTT broker IP address
+- `PORT_MQTT` - Broker port (default: 1883)
+- `MQTT_CLIENT_ID` - Client identifier
+- `MQTT_USERNAME` / `MQTT_PASSWORD` - Broker credentials
+- `MQTT_PUBLISH_TOPIC` / `MQTT_SUBSCRIBE_TOPIC` - Topic names
+- `MQTT_PUBLISH_PAYLOAD` - Message content
+- `MQTT_PUBLISH_PERIOD` - Publish interval in ms (default: 10000)
 
 ## Note
 

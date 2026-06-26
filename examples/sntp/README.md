@@ -35,21 +35,12 @@ Supports both **DHCP** and **static IP**.
 //#define NET_MODE    NETINFO_STATIC
 ```
 
-3. Add the SNTP library to the build:
-   - Source Location: `Libraries/ioLibrary_Driver/Internet/SNTP`
-   - Include Path: `../Libraries/ioLibrary_Driver/Internet/SNTP`
+3. The CubeIDE project already includes the ioLibrary SNTP source. If you
+recreate the project, add `Libraries/ioLibrary_Driver/Internet/SNTP` to the
+source and include paths.
 
-4. When using DHCP, add the timer tick to `SysTick_Handler()` in `stm32f4xx_it.c`:
-
-```c
-void SysTick_Handler(void)
-{
-    HAL_IncTick();
-
-    extern void app_timer_tick(void);
-    app_timer_tick();
-}
-```
+4. `Core/Src/stm32f4xx_it.c` already calls `app_timer_tick()` from
+`SysTick_Handler()`, which drives DHCP and SNTP timeout handling.
 
 5. Build, flash, and open a serial terminal (115200 bps).
 
@@ -77,8 +68,8 @@ QSPI DMA threshold: 16 bytes
 
 The following can be modified in `app_main.c`:
 
-- `NET_MODE` — `NETINFO_DHCP` or `NETINFO_STATIC`
-- `g_net_info` — MAC, static IP, gateway, subnet
-- `g_sntp_server_ip` — SNTP server IP (default: `216.239.35.0` / time.google.com)
-- `TIMEZONE` — Timezone offset (default: 40 = Korea UTC+9)
-- `RECV_TIMEOUT` — SNTP response timeout in ms (default: 10000)
+- `NET_MODE` - `NETINFO_DHCP` or `NETINFO_STATIC`
+- `g_net_info` - MAC, static IP, gateway, subnet
+- `g_sntp_server_ip` - SNTP server IP (default: `216.239.35.0` / time.google.com)
+- `TIMEZONE` - Timezone offset (default: 40 = Korea UTC+9)
+- `RECV_TIMEOUT` - SNTP response timeout in ms (default: 10000)

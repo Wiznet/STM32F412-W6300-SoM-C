@@ -11,17 +11,9 @@ PPPoE (Point-to-Point Protocol over Ethernet) client for the STM32F412 + W6300 S
 
 ## Setup
 
-### Required Source Files
-
-Copy the following files from the PICO-C `examples/pppoe/` directory into this directory:
-
-- `PPPoE.c` / `PPPoE.h`
-- `md5.c` / `md5.h`
-
-Then modify `PPPoE.c`:
-- Remove `#include "pico/time.h"`
-
-Add this directory to Source Location and Include Path in CubeIDE.
+The PPPoE source files are already included in this example directory and the
+CubeIDE project source path. If you recreate the project, add `examples/pppoe`
+to the source and include paths.
 
 ## How to Use
 
@@ -75,12 +67,12 @@ QSPI DMA threshold: 16 bytes
 
 The following can be modified in `app_main.c`:
 
-- `g_net_info` — Initial network configuration
-- `pppoe_id` / `pppoe_id_len` — PPPoE username
-- `pppoe_pw` / `pppoe_pw_len` — PPPoE password
+- `g_net_info` - Initial network configuration
+- `pppoe_id` / `pppoe_id_len` - PPPoE username
+- `pppoe_pw` / `pppoe_pw_len` - PPPoE password
 
 ## Note
 
-- PPPoE uses MACRAW socket internally — no additional socket allocation needed.
+- PPPoE uses MACRAW socket internally; no additional socket allocation is needed.
 - No DHCP or timer tick is required for this example.
 - The `PPP_MAX_RETRY_COUNT` is defined in `PPPoE.h` (default: 5).

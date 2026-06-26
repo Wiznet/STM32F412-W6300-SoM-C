@@ -4,14 +4,13 @@
 
 TLS 1.2 client for the STM32F412 + W6300 SoM. Connects to a TLS server, sends a hello message, and echoes received data back until the server closes the connection.
 
-Uses **mbedTLS 3.6 LTS** with the **ATECC608C-TNGTLS** hardware security element for entropy (RNG). The W6300 hardwired TCP/IP chip handles the underlying TCP connection.
+Uses mbedTLS 3.6 LTS with the ATECC608C-TNGTLS for hardware-backed ECDSA signing, device certificate authentication, and entropy (RNG). The W6300 hardwired TCP/IP chip handles the underlying TCP connection.
 
 Supports both **DHCP** and **static IP**.
 
 ## Hardware
 
 - STM32F412 + W6300 SoM
-- ATECC608C-TNGTLS (I2C2, address 0x35)
 - Ethernet cable (connected to the same network as the TLS server)
 
 ## Software
@@ -35,11 +34,13 @@ Supports both **DHCP** and **static IP**.
 /* USER CODE END Private defines */
 ```
 
-2. Enable **I2C2** in STM32CubeMX (`.ioc`) for ATECC608C communication:
-   - Mode: I2C, 100 kHz, 7-bit addressing
-   - After code generation, ensure `MX_I2C2_Init()` is called before `app_main()`
+2. I2C2 is already configured in the `.ioc` for the on-board ATECC608C-TNGTLS
+secure element. If you regenerate the CubeMX project, keep I2C2 enabled at
+100 kHz and make sure `MX_I2C2_Init()` runs before `app_main()`.
 
-3. (Optional) Enable mTLS in `tls_client.h` to send the ATECC608C device certificate:
+3. mTLS is enabled by default in `tls_client.h`, which configures the
+ATECC608C device certificate for client authentication. Comment out
+`ENABLE_MTLS` to test without client authentication:
 
 ```c
 #define ENABLE_MTLS
@@ -59,17 +60,8 @@ static uint8_t g_tls_server_ip[] = {192, 168, 11, 2};
 #define TLS_SERVER_PORT        443
 ```
 
-6. Add the timer tick to `SysTick_Handler()` in `stm32f4xx_it.c`:
-
-```c
-void SysTick_Handler(void)
-{
-    HAL_IncTick();
-
-    extern void app_timer_tick(void);
-    app_timer_tick();
-}
-```
+6. `Core/Src/stm32f4xx_it.c` already calls `app_timer_tick()` from
+`SysTick_Handler()`, which drives DHCP timeout handling.
 
 7. Generate a test server certificate and start the TLS server on your PC:
 
@@ -83,7 +75,7 @@ openssl s_server -accept 443 -cert server.pem -key server_key.pem -tls1_2
 
 ## Expected Output
 
-### Serial Terminal (mTLS disabled)
+### Serial Terminal (mTLS enabled)
 
 ```
 ========================================
@@ -104,21 +96,6 @@ openssl s_server -accept 443 -cert server.pem -key server_key.pem -tls1_2
  TLS 1.2 Client Echo Test
 ========================================
 [TLS] RNG seeded OK
-[TLS] mTLS: disabled
-[TLS] Init complete
-[TLS] Connecting to 192.168.11.2:443 ...
-[TLS] TCP connected
-[TLS] Starting TLS handshake...
-[TLS] Handshake OK!
-[TLS] Ciphersuite: TLS-ECDHE-ECDSA-WITH-AES-128-GCM-SHA256
-[TLS] TLS version: TLSv1.2
-[TLS] Sent 43 bytes: Hello from STM32F412-W6300-SoM TLS Client
-```
-
-### Serial Terminal (mTLS enabled)
-
-```
-[TLS] RNG seeded OK
 [TLS] Device cert loaded
 [TLS] Signer cert loaded
 [TLS] PK -> ATECC608 slot 0
@@ -133,13 +110,28 @@ openssl s_server -accept 443 -cert server.pem -key server_key.pem -tls1_2
 [TLS] Sent 43 bytes: Hello from STM32F412-W6300-SoM TLS Client
 ```
 
+### Serial Terminal (mTLS disabled)
+
+```
+[TLS] RNG seeded OK
+[TLS] mTLS: disabled
+[TLS] Init complete
+[TLS] Connecting to 192.168.11.2:443 ...
+[TLS] TCP connected
+[TLS] Starting TLS handshake...
+[TLS] Handshake OK!
+[TLS] Ciphersuite: TLS-ECDHE-ECDSA-WITH-AES-128-GCM-SHA256
+[TLS] TLS version: TLSv1.2
+[TLS] Sent 43 bytes: Hello from STM32F412-W6300-SoM TLS Client
+```
+
 ### OpenSSL Server
 
 ```bash
-# Without mTLS (default)
+# Without mTLS after commenting out ENABLE_MTLS
 openssl s_server -accept 443 -cert server.pem -key server_key.pem -tls1_2
 
-# With mTLS (request client certificate)
+# With mTLS (default)
 openssl s_server -accept 443 -cert server.pem -key server_key.pem -tls1_2 -verify 1
 ```
 
@@ -157,11 +149,11 @@ Type a message in the OpenSSL server terminal to echo it back to the board.
 
 The following can be modified in `app_main.c`:
 
-- `ENABLE_MTLS` — uncomment in `tls_client.h` to enable client certificate from ATECC608C (mTLS)
-- `NET_MODE` — `NETINFO_DHCP` or `NETINFO_STATIC`
-- `g_net_info` — MAC, static IP, gateway, subnet
-- `g_tls_server_ip` — TLS server IP address
-- `TLS_SERVER_PORT` — TLS server port (default: 443)
+- `ENABLE_MTLS` - defined in `tls_client.h` by default; comment it out to disable mTLS
+- `NET_MODE` - `NETINFO_DHCP` or `NETINFO_STATIC`
+- `g_net_info` - MAC, static IP, gateway, subnet
+- `g_tls_server_ip` - TLS server IP address
+- `TLS_SERVER_PORT` - TLS server port (default: 443)
 
 ## TLS Settings
 

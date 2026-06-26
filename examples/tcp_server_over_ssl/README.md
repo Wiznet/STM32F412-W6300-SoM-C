@@ -4,14 +4,13 @@
 
 TLS 1.2 echo server for the STM32F412 + W6300 SoM. Listens for incoming TLS client connections, performs the TLS handshake, sends a welcome message, and echoes received data back over the encrypted channel.
 
-Uses **mbedTLS 3.6 LTS** with the **ATECC608C** for entropy (RNG). The server certificate and private key are embedded in the firmware (ECDSA P-256 test certificate from mbedTLS).
+Uses mbedTLS 3.6 LTS with the ATECC608C-TNGTLS for hardware-backed ECDSA signing, device certificate authentication, and entropy (RNG). The server certificate and private key are embedded in the firmware (ECDSA P-256 test certificate from mbedTLS).
 
 Supports both **DHCP** and **static IP**.
 
 ## Hardware
 
 - STM32F412 + W6300 SoM
-- ATECC608C-TNGTLS (I2C2, address 0x35)
 - Ethernet cable (connected to the same network as the test client)
 
 ## Software
@@ -35,9 +34,9 @@ Supports both **DHCP** and **static IP**.
 /* USER CODE END Private defines */
 ```
 
-2. Enable **I2C2** in STM32CubeMX (`.ioc`) for ATECC608C communication:
-   - Mode: I2C, 100 kHz, 7-bit addressing
-   - After code generation, ensure `MX_I2C2_Init()` is called before `app_main()`
+2. I2C2 is already configured in the `.ioc` for the on-board ATECC608C-TNGTLS
+secure element. If you regenerate the CubeMX project, keep I2C2 enabled at
+100 kHz and make sure `MX_I2C2_Init()` runs before `app_main()`.
 
 3. Select network mode in `app_main.c`:
 
@@ -46,17 +45,8 @@ Supports both **DHCP** and **static IP**.
 // #define NET_MODE    NETINFO_STATIC
 ```
 
-4. Add the timer tick to `SysTick_Handler()` in `stm32f4xx_it.c`:
-
-```c
-void SysTick_Handler(void)
-{
-    HAL_IncTick();
-
-    extern void app_timer_tick(void);
-    app_timer_tick();
-}
-```
+4. `Core/Src/stm32f4xx_it.c` already calls `app_timer_tick()` from
+`SysTick_Handler()`, which drives DHCP timeout handling.
 
 5. Build, flash, and open a serial terminal (115200 bps).
 
@@ -123,9 +113,9 @@ Hello World
 
 The following can be modified in `app_main.c`:
 
-- `NET_MODE` — `NETINFO_DHCP` or `NETINFO_STATIC`
-- `g_net_info` — MAC, static IP, gateway, subnet
-- `TLS_SERVER_PORT` — Listening port (default: 443)
+- `NET_MODE` - `NETINFO_DHCP` or `NETINFO_STATIC`
+- `g_net_info` - MAC, static IP, gateway, subnet
+- `TLS_SERVER_PORT` - Listening port (default: 443)
 
 ## TLS Settings
 

@@ -45,10 +45,36 @@ nbtstat -a W6300
 `Core/Src/stm32f4xx_it.c` already calls `app_timer_tick()` from
 `SysTick_Handler()`, which drives DHCP timeout handling.
 
+## Expected Output
+
+```text
+=== NetBIOS Example ===
+
+ DHCP client running
+ NetBIOS name service running
+
+ DHCP success
+==========================================================
+ W6300 network configuration
+
+ MAC         : 00:08:DC:12:34:56
+ IP          : 192.168.11.xxx
+ Subnet Mask : 255.255.255.0
+ Gateway     : 192.168.11.1
+ DNS         : 192.168.11.1
+==========================================================
+```
+
+From a PC on the same network, query the board:
+
+```bash
+nbtstat -a W6300
+```
+
 ## Configuration
 
 The following can be modified:
 
 - `NET_MODE` in `app_main.c` - `NETINFO_DHCP` or `NETINFO_STATIC`
 - `g_net_info` in `app_main.c` - MAC, static IP, gateway, subnet
-- `NETBIOS_BOARD_NAME` in `netbios.h` - NetBIOS hostname
+- `NETBIOS_BOARD_NAME` in `netbios.c` - NetBIOS hostname

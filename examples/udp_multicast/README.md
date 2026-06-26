@@ -6,8 +6,8 @@ UDP Multicast receiver for the STM32F412 + W6300 SoM. The board joins a multicas
 
 Two modes available (uncomment one in the main loop):
 
-- **multicast_recv** (default) — receive and print multicast data
-- **multicast_loopback** — receive and echo back multicast data
+- **multicast_recv** (default) - receive and print multicast data
+- **multicast_loopback** - receive and echo back multicast data
 
 Supports both **DHCP** and **static IP**.
 
@@ -49,26 +49,17 @@ static uint8_t g_multicast_ip[] = {239, 0, 0, 1};
 static uint16_t g_multicast_port = 5000;
 ```
 
-4. Add the `Multicast` library to the build:
-   - Source Location: `Libraries/ioLibrary_Driver/Application/multicast`
-   - Include Path: `../Libraries/ioLibrary_Driver/Application/multicast`
+4. The CubeIDE project already includes the ioLibrary multicast source. If you
+recreate the project, add `Libraries/ioLibrary_Driver/Application/multicast`
+to the source and include paths.
 
-5. When using DHCP, add the timer tick to `SysTick_Handler()` in `stm32f4xx_it.c`:
-
-```c
-void SysTick_Handler(void)
-{
-    HAL_IncTick();
-
-    extern void app_timer_tick(void);
-    app_timer_tick();
-}
-```
+5. `Core/Src/stm32f4xx_it.c` already calls `app_timer_tick()` from
+`SysTick_Handler()`, which drives DHCP timeout handling.
 
 6. Build, flash, and test:
    - Open Hercules UDP panel
    - Set destination to `239.0.0.1:5000`
-   - Send data → the board prints the received message on serial terminal
+   - Send data; the board prints the received message on the serial terminal
 
 ## Expected Output
 
@@ -100,7 +91,7 @@ Hello World
 
 The following can be modified in `app_main.c`:
 
-- `NET_MODE` — `NETINFO_DHCP` or `NETINFO_STATIC`
-- `g_net_info` — MAC, static IP, gateway, subnet
-- `g_multicast_ip` — Multicast group address (default: `239.0.0.1`)
-- `g_multicast_port` — Multicast group port (default: 5000)
+- `NET_MODE` - `NETINFO_DHCP` or `NETINFO_STATIC`
+- `g_net_info` - MAC, static IP, gateway, subnet
+- `g_multicast_ip` - Multicast group address (default: `239.0.0.1`)
+- `g_multicast_port` - Multicast group port (default: 5000)

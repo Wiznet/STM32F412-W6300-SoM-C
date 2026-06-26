@@ -45,17 +45,8 @@ Supports both **DHCP** and **static IP**.
 //#define NET_MODE    NETINFO_STATIC
 ```
 
-3. When using DHCP, add the timer tick to `SysTick_Handler()` in `stm32f4xx_it.c`:
-
-```c
-void SysTick_Handler(void)
-{
-    HAL_IncTick();
-
-    extern void app_timer_tick(void);
-    app_timer_tick();
-}
-```
+3. `Core/Src/stm32f4xx_it.c` already calls `app_timer_tick()` from
+`SysTick_Handler()`, which drives DHCP timeout handling.
 
 4. Build, flash, and open a serial terminal (115200 bps).
 

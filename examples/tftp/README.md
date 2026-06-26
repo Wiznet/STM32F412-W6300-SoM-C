@@ -24,14 +24,9 @@ Supports both **DHCP** and **static IP**.
 
 ## Setup
 
-### ioLibrary TFTP Patch
-
-If required by your ioLibrary_Driver version, apply the TFTP patch:
-
-```bash
-cd Libraries/ioLibrary_Driver
-git apply ../../patches/0002_iolibrary_driver_tftp.patch
-```
+The CubeIDE project already includes the ioLibrary TFTP source. If you recreate
+the project, add `Libraries/ioLibrary_Driver/Internet/TFTP` to the source and
+include paths.
 
 ## How to Use
 
@@ -53,29 +48,16 @@ git apply ../../patches/0002_iolibrary_driver_tftp.patch
 3. Set the TFTP server IP and file name in `app_main.c`:
 
 ```c
-#define TFTP_SERVER_IP         "192.168.11.100"
+#define TFTP_SERVER_IP         "192.168.11.2"
 #define TFTP_SERVER_FILE_NAME  "tftp_test_file.txt"
 ```
 
-4. Add the TFTP library to the build (if not already added):
-   - Source Location: `Libraries/ioLibrary_Driver/Internet/TFTP`
-   - Include Path: `../Libraries/ioLibrary_Driver/Internet/TFTP`
+4. `Core/Src/stm32f4xx_it.c` already calls `app_timer_tick()` from
+`SysTick_Handler()`, which drives DHCP and TFTP timeout handling.
 
-5. Add the timer tick to `SysTick_Handler()` in `stm32f4xx_it.c`:
+5. Start the TFTP server on your PC and place a test file (e.g. `tftp_test_file.txt`) in the root directory.
 
-```c
-void SysTick_Handler(void)
-{
-    HAL_IncTick();
-
-    extern void app_timer_tick(void);
-    app_timer_tick();
-}
-```
-
-6. Start the TFTP server on your PC and place a test file (e.g. `tftp_test_file.txt`) in the root directory.
-
-7. Build, flash, and open a serial terminal (115200 bps).
+6. Build, flash, and open a serial terminal (115200 bps).
 
 ## Expected Output
 
@@ -89,7 +71,7 @@ void SysTick_Handler(void)
  ...
 ==========================================================
 
- TFTP server IP : 192.168.11.100
+ TFTP server IP : 192.168.11.2
  File name      : tftp_test_file.txt
  Sending read request...
  TFTP read success : tftp_test_file.txt
@@ -99,8 +81,8 @@ void SysTick_Handler(void)
 
 The following can be modified in `app_main.c`:
 
-- `NET_MODE` — `NETINFO_DHCP` or `NETINFO_STATIC`
-- `g_net_info` — MAC, static IP, gateway, subnet
-- `TFTP_SERVER_IP` — TFTP server IP address
-- `TFTP_SERVER_FILE_NAME` — File to read from the server
-- `TFTP_SERVER_PORT` — Server port, set in `tftp.h` (default: 69)
+- `NET_MODE` - `NETINFO_DHCP` or `NETINFO_STATIC`
+- `g_net_info` - MAC, static IP, gateway, subnet
+- `TFTP_SERVER_IP` - TFTP server IP address
+- `TFTP_SERVER_FILE_NAME` - File to read from the server
+- `TFTP_SERVER_PORT` - Server port, set in `tftp.h` (default: 69)
