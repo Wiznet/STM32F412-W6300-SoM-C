@@ -58,6 +58,12 @@
  * confirm the registered certificate really is this board's. */
 #define ENABLE_CERT_DUMP
 
+/* Also print the Microchip signer that issued the device certificate. Only
+ * the device certificate is registered with a broker, so this stays off to
+ * keep the dump unambiguous. Raise to 1 when the signer itself is needed,
+ * such as registering it as a CA for just-in-time registration. */
+#define ENABLE_SIGNER_DUMP      0
+
 /* Paho hands sendPacket() whatever is left of its command timer, which can
  * be 0. A write that gives up immediately would fail the CONNECT, so give
  * outbound transfers a floor. */
@@ -294,11 +300,13 @@ int mqtts_transport_init(void)
         }
 
 #ifdef ENABLE_CERT_DUMP
-        printf("\r\n[CERT] Chain this board presents to the broker\r\n");
+        printf("\r\n[CERT] Certificate this board presents to the broker\r\n");
         printf("[CERT] Register the 'device' certificate below, and check it\r\n");
         printf("[CERT] matches the one already registered in your account.\r\n\r\n");
         dump_cert("device", &s_clicert);
+#if ENABLE_SIGNER_DUMP
         dump_cert("signer", s_clicert.next);
+#endif
 #endif
 
         /* Binds the key handle, not the key: signing happens inside the chip. */

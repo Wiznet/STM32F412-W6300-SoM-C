@@ -44,7 +44,7 @@ STM32F412 + W6300 SoM용 MQTT 클라이언트입니다. AWS IoT Core에 TLS 1.2,
 
 2. 온보드 ATECC608C-TNGTLS 보안 소자를 위해 I2C2가 `.ioc`에 이미 설정되어 있습니다. CubeMX 프로젝트를 재생성한다면 I2C2를 100 kHz로 유지하고 `MX_I2C2_Init()`이 `app_main()`보다 먼저 실행되도록 하십시오.
 
-3. 빌드·플래시하고 시리얼 터미널을 엽니다 (115200 bps). `mqtts_transport.c`의 `ENABLE_CERT_DUMP`가 기본으로 켜져 있어, 보드가 부팅 시 인증서 체인을 출력합니다:
+3. 빌드·플래시하고 시리얼 터미널을 엽니다 (115200 bps). `mqtts_transport.c`의 `ENABLE_CERT_DUMP`가 기본으로 켜져 있어, 보드가 부팅 시 자기 인증서를 출력합니다:
 
 ```
 [CERT] device subject : O=Microchip Technology Inc, CN=sn01236103D443C9DC01
@@ -52,14 +52,11 @@ STM32F412 + W6300 SoM용 MQTT 클라이언트입니다. AWS IoT Core에 TLS 1.2,
 MIICIDCCAcWgAwIBAgIQW1PcrZK/i0yxnq0obf9rKTAKBggqhkjOPQQDAjBPMSEw
 ...
 -----END CERTIFICATE-----
-
-[CERT] signer subject : O=Microchip Technology Inc, CN=Crypto Authentication Signer F600
------BEGIN CERTIFICATE-----
-...
------END CERTIFICATE-----
 ```
 
-**device** 블록을 `-----BEGIN CERTIFICATE-----`부터 `-----END CERTIFICATE-----`까지 `device.pem`으로 저장합니다.
+출력된 블록을 `-----BEGIN CERTIFICATE-----`부터 `-----END CERTIFICATE-----`까지 `device.pem`으로 저장합니다.
+
+> 보드는 이 인증서를 발급한 Microchip signer도 함께 전송하여, 브로커가 Microchip 루트까지 체인을 따라갈 수 있게 합니다. signer는 등록 대상이 아니므로 출력하지 않습니다. CA로 등록하는 경우처럼 signer가 필요하면 `ENABLE_SIGNER_DUMP`를 `1`로 설정하십시오.
 
 > 보드마다 인증서가 다르고 개인키가 잠겨 있으므로, AWS 콘솔에서 생성한 인증서는 사용할 수 없습니다. 이 인증서를 등록하십시오.
 
@@ -213,7 +210,8 @@ aws iot describe-endpoint --endpoint-type iot:Data-ATS
 
 `mqtts_transport.c`에서:
 
-- `ENABLE_CERT_DUMP` — 부팅 시 인증서 체인을 출력합니다. 보드 등록이 끝나면 끄십시오.
+- `ENABLE_CERT_DUMP` — 부팅 시 장치 인증서를 출력합니다. 보드 등록이 끝나면 끄십시오.
+- `ENABLE_SIGNER_DUMP` — Microchip signer 인증서도 함께 출력합니다. 기본 `0`. 브로커에 등록하는 것은 장치 인증서뿐이므로, 출력을 헷갈리지 않게 꺼 둡니다.
 - `TLS_DEBUG_LEVEL` — mbedTLS 로깅, 기본 `0`. 레벨 1은 논블로킹 `WANT_READ` 경로를 초당 수백 번 출력합니다.
 
 `mqtt_certificate.h`에서:

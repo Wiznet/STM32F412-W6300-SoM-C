@@ -42,7 +42,7 @@ Socket 1 is fixed by `TLS_SOCKET_NUM` in [`port/wizchip_tls.h`](../../port/wizch
 
 2. I2C2 is already configured in the `.ioc` for the on-board ATECC608C-TNGTLS secure element. If you regenerate the CubeMX project, keep I2C2 enabled at 100 kHz and make sure `MX_I2C2_Init()` runs before `app_main()`.
 
-3. Build, flash, and open a serial terminal (115200 bps). `ENABLE_CERT_DUMP` in `mqtts_transport.c` is on by default, so the board prints its certificate chain at boot:
+3. Build, flash, and open a serial terminal (115200 bps). `ENABLE_CERT_DUMP` in `mqtts_transport.c` is on by default, so the board prints its own certificate at boot:
 
 ```
 [CERT] device subject : O=Microchip Technology Inc, CN=sn01236103D443C9DC01
@@ -50,14 +50,11 @@ Socket 1 is fixed by `TLS_SOCKET_NUM` in [`port/wizchip_tls.h`](../../port/wizch
 MIICIDCCAcWgAwIBAgIQW1PcrZK/i0yxnq0obf9rKTAKBggqhkjOPQQDAjBPMSEw
 ...
 -----END CERTIFICATE-----
-
-[CERT] signer subject : O=Microchip Technology Inc, CN=Crypto Authentication Signer F600
------BEGIN CERTIFICATE-----
-...
------END CERTIFICATE-----
 ```
 
-Save the **device** block, `-----BEGIN CERTIFICATE-----` through `-----END CERTIFICATE-----`, as `device.pem`.
+Save the block, `-----BEGIN CERTIFICATE-----` through `-----END CERTIFICATE-----`, as `device.pem`.
+
+> The board also sends the Microchip signer that issued this certificate, so the broker can walk the chain up to the Microchip root. The signer is not what you register, so it is not printed; set `ENABLE_SIGNER_DUMP` to `1` if you need it, for example to register it as a CA.
 
 > Each board has its own certificate and a locked private key, so a certificate generated in the AWS console cannot be used. Register this one instead.
 
@@ -211,7 +208,8 @@ In `mqtts_transport.h`:
 
 In `mqtts_transport.c`:
 
-- `ENABLE_CERT_DUMP` - print the certificate chain at boot. Turn it off once the board is registered.
+- `ENABLE_CERT_DUMP` - print the device certificate at boot. Turn it off once the board is registered.
+- `ENABLE_SIGNER_DUMP` - also print the Microchip signer certificate, `0` by default. Only the device certificate is registered with a broker, so this stays off to keep the dump unambiguous.
 - `TLS_DEBUG_LEVEL` - mbedTLS logging, `0` by default. Level 1 prints the non-blocking `WANT_READ` path hundreds of times a second.
 
 In `mqtt_certificate.h`:
