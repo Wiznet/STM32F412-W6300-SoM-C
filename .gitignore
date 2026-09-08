@@ -1,2 +1,5 @@
 /Debug/
 /Release/
+
+# CubeIDE per-user view state
+/.settings/com.st.stm32cube.ide.mcu.sfrview.prefs
