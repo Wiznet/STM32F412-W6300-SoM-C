@@ -1,8 +1,8 @@
 /**
   ******************************************************************************
-  * @file    stm32f412zx.h
+  * @file    stm32f412rx.h
   * @author  MCD Application Team
-  * @brief   CMSIS STM32F412Zx Device Peripheral Access Layer Header File.
+  * @brief   CMSIS STM32F412Rx Device Peripheral Access Layer Header File.
   *
   *          This file contains:
   *           - Data structures and the address mapping for all peripherals
@@ -26,12 +26,12 @@
   * @{
   */
 
-/** @addtogroup stm32f412zx
+/** @addtogroup stm32f412rx
   * @{
   */
 
-#ifndef __STM32F412Zx_H
-#define __STM32F412Zx_H
+#ifndef __STM32F412Rx_H
+#define __STM32F412Rx_H
 
 #ifdef __cplusplus
 extern "C" {
@@ -913,9 +913,6 @@ typedef struct
 #define GPIOB_BASE            (AHB1PERIPH_BASE + 0x0400UL)
 #define GPIOC_BASE            (AHB1PERIPH_BASE + 0x0800UL)
 #define GPIOD_BASE            (AHB1PERIPH_BASE + 0x0C00UL)
-#define GPIOE_BASE            (AHB1PERIPH_BASE + 0x1000UL)
-#define GPIOF_BASE            (AHB1PERIPH_BASE + 0x1400UL)
-#define GPIOG_BASE            (AHB1PERIPH_BASE + 0x1800UL)
 #define GPIOH_BASE            (AHB1PERIPH_BASE + 0x1C00UL)
 #define CRC_BASE              (AHB1PERIPH_BASE + 0x3000UL)
 #define RCC_BASE              (AHB1PERIPH_BASE + 0x3800UL)
@@ -1027,9 +1024,6 @@ typedef struct
 #define GPIOB               ((GPIO_TypeDef *) GPIOB_BASE)
 #define GPIOC               ((GPIO_TypeDef *) GPIOC_BASE)
 #define GPIOD               ((GPIO_TypeDef *) GPIOD_BASE)
-#define GPIOE               ((GPIO_TypeDef *) GPIOE_BASE)
-#define GPIOF               ((GPIO_TypeDef *) GPIOF_BASE)
-#define GPIOG               ((GPIO_TypeDef *) GPIOG_BASE)
 #define GPIOH               ((GPIO_TypeDef *) GPIOH_BASE)
 #define CRC                 ((CRC_TypeDef *) CRC_BASE)
 #define RCC                 ((RCC_TypeDef *) RCC_BASE)
@@ -9526,15 +9520,6 @@ typedef struct
 #define RCC_AHB1RSTR_GPIODRST_Pos          (3U)
 #define RCC_AHB1RSTR_GPIODRST_Msk          (0x1UL << RCC_AHB1RSTR_GPIODRST_Pos) /*!< 0x00000008 */
 #define RCC_AHB1RSTR_GPIODRST              RCC_AHB1RSTR_GPIODRST_Msk
-#define RCC_AHB1RSTR_GPIOERST_Pos          (4U)
-#define RCC_AHB1RSTR_GPIOERST_Msk          (0x1UL << RCC_AHB1RSTR_GPIOERST_Pos) /*!< 0x00000010 */
-#define RCC_AHB1RSTR_GPIOERST              RCC_AHB1RSTR_GPIOERST_Msk
-#define RCC_AHB1RSTR_GPIOFRST_Pos          (5U)
-#define RCC_AHB1RSTR_GPIOFRST_Msk          (0x1UL << RCC_AHB1RSTR_GPIOFRST_Pos) /*!< 0x00000020 */
-#define RCC_AHB1RSTR_GPIOFRST              RCC_AHB1RSTR_GPIOFRST_Msk
-#define RCC_AHB1RSTR_GPIOGRST_Pos          (6U)
-#define RCC_AHB1RSTR_GPIOGRST_Msk          (0x1UL << RCC_AHB1RSTR_GPIOGRST_Pos) /*!< 0x00000040 */
-#define RCC_AHB1RSTR_GPIOGRST              RCC_AHB1RSTR_GPIOGRST_Msk
 #define RCC_AHB1RSTR_GPIOHRST_Pos          (7U)
 #define RCC_AHB1RSTR_GPIOHRST_Msk          (0x1UL << RCC_AHB1RSTR_GPIOHRST_Pos) /*!< 0x00000080 */
 #define RCC_AHB1RSTR_GPIOHRST              RCC_AHB1RSTR_GPIOHRST_Msk
@@ -9686,15 +9671,6 @@ typedef struct
 #define RCC_AHB1ENR_GPIODEN_Pos            (3U)
 #define RCC_AHB1ENR_GPIODEN_Msk            (0x1UL << RCC_AHB1ENR_GPIODEN_Pos)   /*!< 0x00000008 */
 #define RCC_AHB1ENR_GPIODEN                RCC_AHB1ENR_GPIODEN_Msk
-#define RCC_AHB1ENR_GPIOEEN_Pos            (4U)
-#define RCC_AHB1ENR_GPIOEEN_Msk            (0x1UL << RCC_AHB1ENR_GPIOEEN_Pos)   /*!< 0x00000010 */
-#define RCC_AHB1ENR_GPIOEEN                RCC_AHB1ENR_GPIOEEN_Msk
-#define RCC_AHB1ENR_GPIOFEN_Pos            (5U)
-#define RCC_AHB1ENR_GPIOFEN_Msk            (0x1UL << RCC_AHB1ENR_GPIOFEN_Pos)   /*!< 0x00000020 */
-#define RCC_AHB1ENR_GPIOFEN                RCC_AHB1ENR_GPIOFEN_Msk
-#define RCC_AHB1ENR_GPIOGEN_Pos            (6U)
-#define RCC_AHB1ENR_GPIOGEN_Msk            (0x1UL << RCC_AHB1ENR_GPIOGEN_Pos)   /*!< 0x00000040 */
-#define RCC_AHB1ENR_GPIOGEN                RCC_AHB1ENR_GPIOGEN_Msk
 #define RCC_AHB1ENR_GPIOHEN_Pos            (7U)
 #define RCC_AHB1ENR_GPIOHEN_Msk            (0x1UL << RCC_AHB1ENR_GPIOHEN_Pos)   /*!< 0x00000080 */
 #define RCC_AHB1ENR_GPIOHEN                RCC_AHB1ENR_GPIOHEN_Msk
@@ -9861,15 +9837,6 @@ typedef struct
 #define RCC_AHB1LPENR_GPIODLPEN_Pos        (3U)
 #define RCC_AHB1LPENR_GPIODLPEN_Msk        (0x1UL << RCC_AHB1LPENR_GPIODLPEN_Pos) /*!< 0x00000008 */
 #define RCC_AHB1LPENR_GPIODLPEN            RCC_AHB1LPENR_GPIODLPEN_Msk
-#define RCC_AHB1LPENR_GPIOELPEN_Pos        (4U)
-#define RCC_AHB1LPENR_GPIOELPEN_Msk        (0x1UL << RCC_AHB1LPENR_GPIOELPEN_Pos) /*!< 0x00000010 */
-#define RCC_AHB1LPENR_GPIOELPEN            RCC_AHB1LPENR_GPIOELPEN_Msk
-#define RCC_AHB1LPENR_GPIOFLPEN_Pos        (5U)
-#define RCC_AHB1LPENR_GPIOFLPEN_Msk        (0x1UL << RCC_AHB1LPENR_GPIOFLPEN_Pos) /*!< 0x00000020 */
-#define RCC_AHB1LPENR_GPIOFLPEN            RCC_AHB1LPENR_GPIOFLPEN_Msk
-#define RCC_AHB1LPENR_GPIOGLPEN_Pos        (6U)
-#define RCC_AHB1LPENR_GPIOGLPEN_Msk        (0x1UL << RCC_AHB1LPENR_GPIOGLPEN_Pos) /*!< 0x00000040 */
-#define RCC_AHB1LPENR_GPIOGLPEN            RCC_AHB1LPENR_GPIOGLPEN_Msk
 #define RCC_AHB1LPENR_GPIOHLPEN_Pos        (7U)
 #define RCC_AHB1LPENR_GPIOHLPEN_Msk        (0x1UL << RCC_AHB1LPENR_GPIOHLPEN_Pos) /*!< 0x00000080 */
 #define RCC_AHB1LPENR_GPIOHLPEN            RCC_AHB1LPENR_GPIOHLPEN_Msk
@@ -14069,9 +14036,6 @@ typedef struct
                                         ((INSTANCE) == GPIOB) || \
                                         ((INSTANCE) == GPIOC) || \
                                         ((INSTANCE) == GPIOD) || \
-                                        ((INSTANCE) == GPIOE) || \
-                                        ((INSTANCE) == GPIOF) || \
-                                        ((INSTANCE) == GPIOG) || \
                                         ((INSTANCE) == GPIOH))
 
 /******************************** I2C Instances *******************************/
@@ -14436,8 +14400,7 @@ typedef struct
 /****************** UART Instances : Hardware Flow control ********************/
 #define IS_UART_HWFLOW_INSTANCE(INSTANCE) (((INSTANCE) == USART1) || \
                                            ((INSTANCE) == USART2) || \
-                                           ((INSTANCE) == USART3) || \
-                                           ((INSTANCE) == USART6))
+                                           ((INSTANCE) == USART3))
 /******************** UART Instances : LIN mode **********************/
 #define IS_UART_LIN_INSTANCE          IS_UART_HALFDUPLEX_INSTANCE
 
@@ -14538,4 +14501,4 @@ typedef struct
 }
 #endif /* __cplusplus */
 
-#endif /* __STM32F412Zx_H */
+#endif /* __STM32F412Rx_H */

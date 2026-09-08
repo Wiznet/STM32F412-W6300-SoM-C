@@ -1,8 +1,8 @@
 /**
   ******************************************************************************
-  * @file      startup_stm32f412zx.s
+  * @file      startup_stm32f412rx.s
   * @author    MCD Application Team
-  * @brief     STM32F412Zx Devices vector table for GCC based toolchains. 
+  * @brief     STM32F412Rx Devices vector table for GCC based toolchains. 
   *            This module performs:
   *                - Set the initial SP
   *                - Set the initial PC == Reset_Handler,
@@ -59,7 +59,7 @@ defined in linker script */
   .type  Reset_Handler, %function
 Reset_Handler:  
   ldr   sp, =_estack       /* set stack pointer */
-
+  
 /* Call the clock system initialization function.*/
   bl  SystemInit  
 
