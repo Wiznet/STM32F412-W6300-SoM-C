@@ -17,6 +17,11 @@
 #define QSPI_DMA_THRESHOLD     16
 
 /* ============================================================ */
+/* How long wizchip_initialize() waits for the PHY link          */
+/* ============================================================ */
+#define PHY_LINK_TIMEOUT_MS    5000
+
+/* ============================================================ */
 /* DMA completion flags                                          */
 /* Set by HAL callbacks, cleared before each transfer.           */
 /* ============================================================ */
@@ -176,7 +181,7 @@ void wizchip_reset(void)
     HAL_Delay(100);
 
     HAL_GPIO_WritePin(W6300_RSTn_GPIO_Port, W6300_RSTn_Pin, GPIO_PIN_SET);
-    HAL_Delay(100);
+    HAL_Delay(500);
 }
 
 /* ============================================================ */
@@ -194,29 +199,66 @@ void wizchip_initialize(void)
     printf("QSPI DMA threshold: %d bytes\r\n", QSPI_DMA_THRESHOLD);
 
     reg_wizchip_qspi_cbfunc(W6300_QspiReadByte, W6300_QspiWriteByte);
-    reg_wizchip_cs_cbfunc(wizchip_select, wizchip_deselect);
+//    reg_wizchip_cs_cbfunc(wizchip_select, wizchip_deselect);
 
+    /* All sockets 2KB TX / 2KB RX (proven-stable). Bumping a single socket's
+     * RX to 16KB reliably stalled iperf on this W6300 driver, so keep 2KB. */
+#ifdef EXAMPLE_IPERF
+    /* Throughput build: socket 0 = DHCP, socket 1 = iperf data, rest unused.
+     * Socket 1 gets a large RX buffer so recv() can pull a big chunk per cycle;
+     * keep IPERF_BUF_MAX_SIZE (app_main.c) <= this buffer.
+     *
+     * Only enlarge this together with SF_TCP_NODELAY on the socket (see
+     * examples/iperf/app_main.c) - without it an RX buffer above one MSS makes
+     * the W6300 fall back to its delayed-ACK timer and throughput collapses.
+     *
+     * The datasheet contradicts itself on the total: DS 4.2.27 (p.72) says
+     * total RX > 16KB "causes a malfunction", while DS sect.2 p.18, Figure 3
+     * and the 4KB x 8 reset default say 32KB. 18KB works here; if in doubt drop
+     * socket 1 to 8KB, still far above one MSS. */
+    uint8_t memsize[2][8] = {
+        {2,  2, 0, 0, 0, 0, 0, 0},   /* TX: total  4KB */
+        {2, 16, 0, 0, 0, 0, 0, 0}    /* RX: total 18KB (socket 1 = 16KB) */
+    };
+#else
     uint8_t memsize[2][8] = {
         {2, 2, 2, 2, 2, 2, 2, 2},   /* TX */
         {2, 2, 2, 2, 2, 2, 2, 2}    /* RX */
     };
+#endif
 
     if (ctlwizchip(CW_INIT_WIZCHIP, (void *)memsize) == -1)
     {
         printf(" W6x00 initialized fail\r\n");
         return;
     }
+    printf("[3] CW_INIT_WIZCHIP done\r\n");
 
     uint8_t temp;
+    uint32_t start_ms = HAL_GetTick();
+
     do {
         if (ctlwizchip(CW_GET_PHYLINK, (void *)&temp) == -1)
         {
             printf(" Unknown PHY link status\r\n");
             return;
         }
+
+        /* Subtraction stays correct across the 32-bit HAL_GetTick() wrap at
+         * ~49.7 days; HAL_GetTick() + timeout does not. */
+        if ((HAL_GetTick() - start_ms) >= PHY_LINK_TIMEOUT_MS)
+        {
+            printf(" PHY Link timeout (no cable?)\r\n");
+            break;
+        }
     } while (temp == PHY_LINK_OFF);
 
-    printf(" W6300 PHY Link UP\r\n");
+    printf("[4] CW_GET_PHYLINK done\r\n");
+
+    if (temp == PHY_LINK_OFF)
+        printf(" W6300 PHY Link DOWN\r\n");
+    else
+        printf(" W6300 PHY Link UP\r\n");
 }
 
 /* ============================================================ */
