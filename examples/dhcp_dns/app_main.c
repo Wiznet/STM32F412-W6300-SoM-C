@@ -146,6 +146,9 @@ void app_main(void)
     {
         network_initialize(g_net_info);
         print_network_information(g_net_info);
+
+        /* Static mode already has an address — DNS can start right away. */
+        g_dhcp_get_ip_flag = 1;
     }
 
     /* ---- DNS init ---- */
@@ -166,6 +169,8 @@ void app_main(void)
                     printf(" DHCP success\r\n");
                     g_dhcp_get_ip_flag = 1;
                 }
+
+                dhcp_retry = 0;
             }
             else if (retval == DHCP_FAILED)
             {
@@ -189,8 +194,8 @@ void app_main(void)
             HAL_Delay(1000);
         }
 
-        /* ---- DNS process (runs once after DHCP lease) ---- */
-        if ((g_dns_get_ip_flag == 0) && (retval == DHCP_IP_LEASED))
+        /* ---- DNS process (runs once, as soon as an address is available) ---- */
+        if ((g_dns_get_ip_flag == 0) && (g_dhcp_get_ip_flag == 1))
         {
             while (1)
             {

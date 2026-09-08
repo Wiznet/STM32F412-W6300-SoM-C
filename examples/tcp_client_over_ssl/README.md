@@ -56,9 +56,13 @@ ATECC608C device certificate for client authentication. Comment out
 5. Set the TLS server IP in `app_main.c`:
 
 ```c
-static uint8_t g_tls_server_ip[] = {192, 168, 11, 2};
+static uint8_t g_tls_server_ip[] = {192, 168, 11, 100};
 #define TLS_SERVER_PORT        443
 ```
+
+> With `NETINFO_STATIC` the server address must differ from `g_net_info.ip`
+> (`192.168.11.2` by default). If both are the same the board and the server
+> claim one address and the handshake never starts.
 
 6. `Core/Src/stm32f4xx_it.c` already calls `app_timer_tick()` from
 `SysTick_Handler()`, which drives DHCP timeout handling.
@@ -101,7 +105,7 @@ openssl s_server -accept 443 -cert server.pem -key server_key.pem -tls1_2
 [TLS] PK -> ATECC608 slot 0
 [TLS] mTLS: enabled
 [TLS] Init complete
-[TLS] Connecting to 192.168.11.2:443 ...
+[TLS] Connecting to 192.168.11.100:443 ...
 [TLS] TCP connected
 [TLS] Starting TLS handshake...
 [TLS] Handshake OK!
@@ -116,7 +120,7 @@ openssl s_server -accept 443 -cert server.pem -key server_key.pem -tls1_2
 [TLS] RNG seeded OK
 [TLS] mTLS: disabled
 [TLS] Init complete
-[TLS] Connecting to 192.168.11.2:443 ...
+[TLS] Connecting to 192.168.11.100:443 ...
 [TLS] TCP connected
 [TLS] Starting TLS handshake...
 [TLS] Handshake OK!

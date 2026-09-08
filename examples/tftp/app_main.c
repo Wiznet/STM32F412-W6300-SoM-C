@@ -82,7 +82,6 @@ static uint8_t tftp_client_socket_buffer[TFTP_CLIENT_SOCKET_BUFFER_SIZE] = {0};
 /* ============================================================ */
 /* DHCP                                                          */
 /* ============================================================ */
-static uint8_t g_dhcp_get_ip_flag = 0;
 static volatile uint16_t g_msec_cnt = 0;
 
 static void cb_dhcp_assign(void)

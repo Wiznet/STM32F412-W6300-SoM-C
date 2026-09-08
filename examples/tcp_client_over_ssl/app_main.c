@@ -45,8 +45,10 @@
 #define SOCKET_DHCP            0
 /* TLS_SOCKET_NUM (1) is defined in w6300_tls_transport.h */
 
-/* TLS server address -- change to your server's IP */
-static uint8_t g_tls_server_ip[] = {192, 168, 11, 2};
+/* TLS server address -- change to your server's IP.
+ * With NET_MODE set to NETINFO_STATIC this must differ from g_net_info.ip
+ * below, otherwise the board and the server claim the same address. */
+static uint8_t g_tls_server_ip[] = {192, 168, 11, 100};
 #define TLS_SERVER_PORT        443
 
 /* ============================================================ */
@@ -232,6 +234,8 @@ void app_main(void)
                     printf(" DHCP success\r\n");
                     g_dhcp_get_ip_flag = 1;
                 }
+
+                dhcp_retry = 0;
             }
             else if (retval == DHCP_FAILED)
             {

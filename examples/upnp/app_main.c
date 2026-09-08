@@ -99,7 +99,6 @@ extern unsigned long my_time;
 /* ============================================================ */
 /* DHCP                                                          */
 /* ============================================================ */
-static uint8_t g_dhcp_get_ip_flag = 0;
 static volatile uint16_t g_msec_cnt = 0;
 
 static void cb_dhcp_assign(void)

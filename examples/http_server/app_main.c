@@ -169,6 +169,8 @@ void app_main(void)
                     printf(" DHCP success\r\n");
                     g_dhcp_get_ip_flag = 1;
                 }
+
+                dhcp_retry = 0;
             }
             else if (retval == DHCP_FAILED)
             {
