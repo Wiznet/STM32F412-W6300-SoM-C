@@ -80,6 +80,11 @@ static mbedtls_pk_context       s_pkey;
 static mbedtls_entropy_context  s_entropy;
 static mbedtls_ctr_drbg_context s_ctr_drbg;
 
+/* The receive buffer Paho was handed, so mqtts_read() can tell when a read
+ * would run past the end of it. See mqtts_transport_set_recv_buf(). */
+static unsigned char *s_recv_buf      = NULL;
+static size_t         s_recv_buf_size = 0;
+
 static uint8_t s_initialised = 0;
 static uint8_t s_socket_open = 0;
 
@@ -136,6 +141,69 @@ static void tls_debug_cb(void *ctx, int level,
 /* ============================================================ */
 /* Paho Network callbacks                                        */
 /* ============================================================ */
+
+void mqtts_transport_set_recv_buf(unsigned char *buf, size_t size)
+{
+    s_recv_buf      = buf;
+    s_recv_buf_size = size;
+}
+
+/* readPacket() in the ioLibrary MQTT client takes the remaining length
+ * straight off the wire and reads that many bytes into its receive buffer
+ * without checking that they fit: a broker packet larger than the buffer
+ * runs past the end of it. The length field can encode 256 MB and AWS IoT
+ * Core allows 128 KB payloads, against the 2 KB buffer this example gives
+ * Paho. The library is a submodule here, so the guard lives on this side
+ * of the callback instead.
+ *
+ * Only reads aimed into the registered buffer are checked. readPacket()
+ * also reads the length bytes one at a time into a stack local, and that
+ * is not a buffer overrun. */
+static int mqtts_recv_would_overflow(const unsigned char *buf, int len)
+{
+    if (s_recv_buf == NULL || buf < s_recv_buf ||
+        buf >= s_recv_buf + s_recv_buf_size)
+        return 0;
+
+    return (size_t)len > (size_t)(s_recv_buf + s_recv_buf_size - buf);
+}
+
+/* Read the oversized packet off the session and throw it away. Leaving it
+ * in the stream would desynchronise every packet after it, because the
+ * next readPacket() would parse this one's payload as a header. */
+static int mqtts_discard(int len, long timeout_ms)
+{
+    static unsigned char scratch[128];
+    uint32_t start = HAL_GetTick();
+    int dropped = 0;
+
+    while (dropped < len)
+    {
+        size_t chunk = (size_t)(len - dropped);
+        int    ret;
+
+        if (chunk > sizeof(scratch))
+            chunk = sizeof(scratch);
+
+        ret = mbedtls_ssl_read(&s_ssl, scratch, chunk);
+
+        if (ret > 0)
+            dropped += ret;
+        else if (ret != MBEDTLS_ERR_SSL_WANT_READ &&
+                 ret != MBEDTLS_ERR_SSL_WANT_WRITE)
+            break;   /* peer closed or failed; the caller reconnects */
+
+        if ((HAL_GetTick() - start) >= (uint32_t)timeout_ms)
+            break;
+    }
+
+    printf("[TLS] dropped a %d byte MQTT packet; the receive buffer is %u\r\n",
+           len, (unsigned)s_recv_buf_size);
+
+    /* Anything other than len makes readPacket() fail this packet. */
+    return -1;
+}
+
 static int mqtts_read(Network *n, unsigned char *buf, int len, long timeout_ms)
 {
     (void)n;
@@ -148,6 +216,9 @@ static int mqtts_read(Network *n, unsigned char *buf, int len, long timeout_ms)
 
     if (timeout_ms < 0)
         timeout_ms = 0;
+
+    if (mqtts_recv_would_overflow(buf, len))
+        return mqtts_discard(len, timeout_ms);
 
     for (;;)
     {

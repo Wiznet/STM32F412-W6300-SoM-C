@@ -16,6 +16,7 @@
 #define __MQTTS_TRANSPORT_H__
 
 #include <stdint.h>
+#include <stddef.h>
 #include "MQTTClient.h"
 
 /* Comment out to authenticate the broker only, without presenting a client
@@ -29,6 +30,21 @@
  * @return 0 on success, negative mbedTLS error code otherwise.
  */
 int mqtts_transport_init(void);
+
+/**
+ * @brief  Tell the transport which buffer Paho reads into, so it can refuse a
+ *         read that would run past the end of it.
+ *
+ * @details readPacket() in the MQTT client reads the remaining length off the
+ *          wire and passes it straight to this transport without checking it
+ *          against the buffer it was given, so a broker packet larger than the
+ *          buffer would overrun it. Call this with the same buffer and size
+ *          passed to MQTTClientInit(); without it the check is inactive.
+ *
+ * @param  buf  Receive buffer handed to MQTTClientInit().
+ * @param  size Its size in bytes.
+ */
+void mqtts_transport_set_recv_buf(unsigned char *buf, size_t size);
 
 /**
  * @brief  Open the TCP socket, run the TLS handshake, and wire @p n up to

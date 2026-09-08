@@ -206,6 +206,10 @@ static int32_t mqtt_session_open(void)
                    g_mqtt_send_buf, ETHERNET_BUF_MAX_SIZE,
                    g_mqtt_recv_buf, ETHERNET_BUF_MAX_SIZE);
 
+    /* The MQTT client does not bound its reads against this buffer, so the
+     * transport needs to know where it ends. */
+    mqtts_transport_set_recv_buf(g_mqtt_recv_buf, ETHERNET_BUF_MAX_SIZE);
+
     g_mqtt_packet_connect_data.MQTTVersion = 4;   /* AWS IoT speaks MQTT 3.1.1 */
     g_mqtt_packet_connect_data.cleansession = 1;
     g_mqtt_packet_connect_data.willFlag = 0;
