@@ -56,6 +56,7 @@ STM32F412-W6300-SoM-C/
 |-- examples/
 |   |-- dhcp_dns/                      # DHCP + DNS
 |   |-- loopback/                      # TCP/UDP echo
+|   |-- iperf/                         # iperf2 TCP throughput test
 |   |-- udp/                           # UDP server/client
 |   |-- udp_multicast/                 # UDP multicast receiver
 |   |-- tcp_server_multi_socket/       # Multi-socket TCP server
@@ -93,6 +94,7 @@ Select exactly one example macro in `Core/Inc/main.h`.
 |---------|-------|-------------|
 | `dhcp_dns` | `EXAMPLE_DHCP_DNS` | Obtain IP via DHCP and resolve a domain name via DNS |
 | `loopback` | `EXAMPLE_LOOPBACK` | TCP server/client and UDP echo loopback |
+| `iperf` | `EXAMPLE_IPERF` | iperf2 TCP throughput server (port 5001, iperf v2 only) |
 | `udp` | `EXAMPLE_UDP` | UDP server/client echo-back |
 | `udp_multicast` | `EXAMPLE_UDP_MULTICAST` | UDP multicast receiver with IGMP |
 | `tcp_server_multi_socket` | `EXAMPLE_TCP_SERVER_MULTI_SOCKET` | Multi-socket TCP server on sequential ports |
@@ -116,6 +118,12 @@ the ATECC608C hardware RNG as the entropy source.
 - **tcp_server_over_ssl**: Listens for TLS client connections using an embedded test certificate. Echoes received data back over the encrypted channel.
 
 See each example's own README for setup details, OpenSSL commands, and expected output.
+
+### Throughput
+
+The `iperf` example measures roughly **70 Mbps** TCP on a 100 Mbit link
+(QSPI QUAD @ 50 MHz). See [`examples/iperf/README.md`](examples/iperf/README.md)
+for the tuning knobs.
 
 ## Getting Started
 
@@ -166,6 +174,7 @@ For example, to build the DHCP + DNS example:
 /* USER CODE BEGIN Private defines */
 #define EXAMPLE_DHCP_DNS
 //#define EXAMPLE_LOOPBACK
+//#define EXAMPLE_IPERF
 //#define EXAMPLE_UDP
 //#define EXAMPLE_UDP_MULTICAST
 //#define EXAMPLE_TCP_SERVER_MULTI_SOCKET
@@ -258,3 +267,4 @@ Third-party components keep their own licenses:
 - [ATECC608C Datasheet](https://www.microchip.com/en-us/product/ATECC608C)
 - [CryptoAuthLib GitHub](https://github.com/MicrochipTech/cryptoauthlib)
 - [WIZnet-PICO-C](https://github.com/WIZnet-ioNIC/WIZnet-PICO-C)
+- [WIZnet-PICO-IPERF3-C](https://github.com/WIZnet-ioNIC/WIZnet-PICO-IPERF3-C) (source of the iperf2 example)
