@@ -49,7 +49,10 @@
 #define PORT_MQTT              1883
 #define DEFAULT_TIMEOUT        (1000 * 1)  /* 1 second */
 
-static uint8_t g_mqtt_broker_ip[4] = {192, 168, 11, 2};
+/* Broker address. With NET_MODE set to NETINFO_STATIC this must differ from
+ * g_net_info.ip below — otherwise the board and the broker claim the same
+ * address and the connection can never complete. */
+static uint8_t g_mqtt_broker_ip[4] = {192, 168, 11, 100};
 
 /* MQTT settings */
 #define MQTT_CLIENT_ID         "w6300-som"
@@ -60,6 +63,11 @@ static uint8_t g_mqtt_broker_ip[4] = {192, 168, 11, 2};
 #define MQTT_PUBLISH_PERIOD    (1000 * 10)  /* 10 seconds */
 #define MQTT_SUBSCRIBE_TOPIC   "subscribe_topic"
 #define MQTT_KEEP_ALIVE        60           /* seconds */
+
+/* MQTTYield() takes a timeout in milliseconds, not the keep-alive interval.
+ * It is how long one yield waits for an inbound packet before returning. */
+#define MQTT_YIELD_TIMEOUT     100          /* ms */
+#define MQTT_RECONNECT_DELAY   (1000 * 5)   /* 5 seconds */
 
 /* ============================================================ */
 /* Network information                                           */
@@ -104,8 +112,8 @@ static MQTTMessage g_mqtt_message;
 /* ============================================================ */
 /* DHCP                                                          */
 /* ============================================================ */
-static uint8_t g_dhcp_get_ip_flag = 0;
 static volatile uint16_t g_msec_cnt = 0;
+static volatile uint8_t g_dhcp_tick = 0;
 
 static void cb_dhcp_assign(void)
 {
@@ -153,8 +161,66 @@ void app_timer_tick(void)
         g_msec_cnt = 0;
 
         if (g_net_info.dhcp == NETINFO_DHCP)
+        {
             DHCP_time_handler();
+            g_dhcp_tick = 1;
+        }
     }
+}
+
+/* ============================================================ */
+/* MQTT session open / close                                     */
+/* ============================================================ */
+static void mqtt_session_close(void)
+{
+    disconnect(SOCKET_MQTT);
+    close(SOCKET_MQTT);
+}
+
+static int32_t mqtt_session_open(void)
+{
+    int32_t retval;
+
+    if (ConnectNetwork(&g_mqtt_network, g_mqtt_broker_ip, PORT_MQTT) != SOCK_OK)
+    {
+        printf(" Network connect failed\r\n");
+        return -1;
+    }
+
+    MQTTClientInit(&g_mqtt_client, &g_mqtt_network, DEFAULT_TIMEOUT,
+                   g_mqtt_send_buf, ETHERNET_BUF_MAX_SIZE,
+                   g_mqtt_recv_buf, ETHERNET_BUF_MAX_SIZE);
+
+    g_mqtt_packet_connect_data.MQTTVersion = 3;
+    g_mqtt_packet_connect_data.cleansession = 1;
+    g_mqtt_packet_connect_data.willFlag = 0;
+    g_mqtt_packet_connect_data.keepAliveInterval = MQTT_KEEP_ALIVE;
+    g_mqtt_packet_connect_data.clientID.cstring = MQTT_CLIENT_ID;
+    g_mqtt_packet_connect_data.username.cstring = MQTT_USERNAME;
+    g_mqtt_packet_connect_data.password.cstring = MQTT_PASSWORD;
+
+    retval = MQTTConnect(&g_mqtt_client, &g_mqtt_packet_connect_data);
+
+    if (retval < 0)
+    {
+        printf(" MQTT connect failed : %ld\r\n", retval);
+        return -1;
+    }
+
+    retval = MQTTSubscribe(&g_mqtt_client, MQTT_SUBSCRIBE_TOPIC, QOS0, message_arrived);
+
+    if (retval < 0)
+    {
+        printf(" Subscribe failed : %ld\r\n", retval);
+        return -1;
+    }
+
+    printf(" MQTT connected\r\n");
+    printf(" Subscribed to '%s'\r\n", MQTT_SUBSCRIBE_TOPIC);
+    printf(" Publishing to '%s' every %d seconds\r\n\r\n",
+           MQTT_PUBLISH_TOPIC, MQTT_PUBLISH_PERIOD / 1000);
+
+    return 0;
 }
 
 /* ============================================================ */
@@ -164,6 +230,7 @@ void app_main(void)
 {
     int32_t retval = 0;
     uint8_t dhcp_retry = 0;
+    uint8_t mqtt_connected = 0;
     uint32_t start_ms = 0;
     uint32_t end_ms = 0;
 
@@ -212,42 +279,8 @@ void app_main(void)
         print_network_information(g_net_info);
     }
 
-    /* ---- Connect to MQTT broker ---- */
+    /* ---- MQTT setup ---- */
     NewNetwork(&g_mqtt_network, SOCKET_MQTT);
-
-    retval = ConnectNetwork(&g_mqtt_network, g_mqtt_broker_ip, PORT_MQTT);
-
-    if (retval != 1)
-    {
-        printf(" Network connect failed\r\n");
-        while (1)
-            ;
-    }
-
-    /* Initialize MQTT client */
-    MQTTClientInit(&g_mqtt_client, &g_mqtt_network, DEFAULT_TIMEOUT,
-                   g_mqtt_send_buf, ETHERNET_BUF_MAX_SIZE,
-                   g_mqtt_recv_buf, ETHERNET_BUF_MAX_SIZE);
-
-    /* Connect to broker */
-    g_mqtt_packet_connect_data.MQTTVersion = 3;
-    g_mqtt_packet_connect_data.cleansession = 1;
-    g_mqtt_packet_connect_data.willFlag = 0;
-    g_mqtt_packet_connect_data.keepAliveInterval = MQTT_KEEP_ALIVE;
-    g_mqtt_packet_connect_data.clientID.cstring = MQTT_CLIENT_ID;
-    g_mqtt_packet_connect_data.username.cstring = MQTT_USERNAME;
-    g_mqtt_packet_connect_data.password.cstring = MQTT_PASSWORD;
-
-    retval = MQTTConnect(&g_mqtt_client, &g_mqtt_packet_connect_data);
-
-    if (retval < 0)
-    {
-        printf(" MQTT connect failed : %ld\r\n", retval);
-        while (1)
-            ;
-    }
-
-    printf(" MQTT connected\r\n");
 
     /* Configure publish message */
     g_mqtt_message.qos = QOS0;
@@ -256,49 +289,92 @@ void app_main(void)
     g_mqtt_message.payload = MQTT_PUBLISH_PAYLOAD;
     g_mqtt_message.payloadlen = strlen(g_mqtt_message.payload);
 
-    /* Subscribe */
-    retval = MQTTSubscribe(&g_mqtt_client, MQTT_SUBSCRIBE_TOPIC, QOS0, message_arrived);
-
-    if (retval < 0)
-    {
-        printf(" Subscribe failed : %ld\r\n", retval);
-        while (1)
-            ;
-    }
-
-    printf(" Subscribed to '%s'\r\n", MQTT_SUBSCRIBE_TOPIC);
-    printf(" Publishing to '%s' every %d seconds\r\n\r\n", MQTT_PUBLISH_TOPIC, MQTT_PUBLISH_PERIOD / 1000);
-
-    start_ms = HAL_GetTick();
-
     /* ---- Main loop ---- */
     while (1)
     {
+        /* ---- DHCP renewal ---- */
+        /* The lease is not permanent: DHCP_run() has to keep being called or
+         * the address is lost when the lease expires. Once per second is
+         * enough, and it keeps DHCP off the QSPI bus the rest of the time. */
+        if (g_net_info.dhcp == NETINFO_DHCP && g_dhcp_tick)
+        {
+            g_dhcp_tick = 0;
+            retval = DHCP_run();
+
+            if (retval == DHCP_IP_CHANGED)
+            {
+                /* The session belongs to the old address — start over. */
+                printf(" DHCP IP changed\r\n");
+
+                mqtt_connected = 0;
+                mqtt_session_close();
+                continue;
+            }
+            else if (retval == DHCP_FAILED)
+            {
+                printf(" DHCP renewal failed\r\n");
+            }
+        }
+
+        /* ---- (Re)connect to the broker ---- */
+        if (!mqtt_connected)
+        {
+            if (mqtt_session_open() == 0)
+            {
+                mqtt_connected = 1;
+                start_ms = HAL_GetTick();
+            }
+            else
+            {
+                mqtt_session_close();
+                printf(" Retry in %d seconds\r\n", MQTT_RECONNECT_DELAY / 1000);
+                HAL_Delay(MQTT_RECONNECT_DELAY);
+            }
+
+            continue;
+        }
+
+        /* A closed socket looks like "no packet arrived" to the MQTT library,
+         * not like an error, so check the socket state directly. */
+        if (getSn_SR(SOCKET_MQTT) != SOCK_ESTABLISHED)
+        {
+            printf(" Connection lost\r\n");
+
+            mqtt_connected = 0;
+            mqtt_session_close();
+            continue;
+        }
+
         /* Yield — process incoming messages and keep-alive */
-        if ((retval = MQTTYield(&g_mqtt_client, g_mqtt_packet_connect_data.keepAliveInterval)) < 0)
+        if ((retval = MQTTYield(&g_mqtt_client, MQTT_YIELD_TIMEOUT)) < 0)
         {
             printf(" Yield error : %ld\r\n", retval);
-            while (1)
-                ;
+
+            mqtt_connected = 0;
+            mqtt_session_close();
+            continue;
         }
 
         end_ms = HAL_GetTick();
 
-        /* Periodic publish */
-        if (end_ms > start_ms + MQTT_PUBLISH_PERIOD)
+        /* Periodic publish. The subtraction stays correct across the 32-bit
+         * HAL_GetTick() wrap-around at ~49.7 days. */
+        if ((end_ms - start_ms) >= MQTT_PUBLISH_PERIOD)
         {
             retval = MQTTPublish(&g_mqtt_client, MQTT_PUBLISH_TOPIC, &g_mqtt_message);
 
             if (retval < 0)
             {
                 printf(" Publish failed : %ld\r\n", retval);
-                while (1)
-                    ;
+
+                mqtt_connected = 0;
+                mqtt_session_close();
+                continue;
             }
 
             printf(" Published\r\n");
 
-            start_ms = HAL_GetTick();
+            start_ms = end_ms;
         }
     }
 }
