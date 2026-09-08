@@ -22,9 +22,7 @@ Supports both **DHCP** and **static IP**.
 
 ## Setup
 
-The UPnP source files are already included in this example directory and the
-CubeIDE project source path. If you recreate the project, add `examples/upnp`
-to the source and include paths.
+The UPnP source files are already included in this example directory and the CubeIDE project source path. If you recreate the project, add `examples/upnp` to the source and include paths.
 
 ## How to Use
 
@@ -43,8 +41,7 @@ to the source and include paths.
 //#define NET_MODE    NETINFO_STATIC
 ```
 
-3. `Core/Src/stm32f4xx_it.c` already calls `app_timer_tick()` from
-`SysTick_Handler()`, which drives DHCP and UPnP timeout handling.
+3. `Core/Src/stm32f4xx_it.c` already calls `app_timer_tick()` from `SysTick_Handler()`, which drives DHCP and UPnP timeout handling.
 
 4. Build, flash, and open a serial terminal (115200 bps).
 

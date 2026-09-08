@@ -49,12 +49,9 @@ static uint8_t g_multicast_ip[] = {239, 0, 0, 1};
 static uint16_t g_multicast_port = 5000;
 ```
 
-4. The CubeIDE project already includes the ioLibrary multicast source. If you
-recreate the project, add `Libraries/ioLibrary_Driver/Application/multicast`
-to the source and include paths.
+4. The CubeIDE project already includes the ioLibrary multicast source. If you recreate the project, add `Libraries/ioLibrary_Driver/Application/multicast` to the source and include paths.
 
-5. `Core/Src/stm32f4xx_it.c` already calls `app_timer_tick()` from
-`SysTick_Handler()`, which drives DHCP timeout handling.
+5. `Core/Src/stm32f4xx_it.c` already calls `app_timer_tick()` from `SysTick_Handler()`, which drives DHCP timeout handling.
 
 6. Build, flash, and test:
    - Open Hercules UDP panel

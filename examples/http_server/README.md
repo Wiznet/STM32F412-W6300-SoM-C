@@ -2,8 +2,7 @@
 
 ## Overview
 
-Simple HTTP server for the STM32F412 + W6300 SoM. It serves a static web page
-on port 80. Open a browser and navigate to the board IP address to see the page.
+Simple HTTP server for the STM32F412 + W6300 SoM. It serves a static web page on port 80. Open a browser and navigate to the board IP address to see the page.
 
 This example is based on the WIZnet-PICO-C HTTP server example.
 
@@ -42,8 +41,7 @@ This example is based on the WIZnet-PICO-C HTTP server example.
 http://<board IP>/
 ```
 
-`Core/Src/stm32f4xx_it.c` already calls `app_timer_tick()` from
-`SysTick_Handler()`, which drives DHCP and HTTP server timers.
+`Core/Src/stm32f4xx_it.c` already calls `app_timer_tick()` from `SysTick_Handler()`, which drives DHCP and HTTP server timers.
 
 ## Expected Output
 

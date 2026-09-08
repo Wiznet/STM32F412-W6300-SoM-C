@@ -40,13 +40,9 @@ Socket 1 is fixed by `TLS_SOCKET_NUM` in [`port/wizchip_tls.h`](../../port/wizch
 /* USER CODE END Private defines */
 ```
 
-2. I2C2 is already configured in the `.ioc` for the on-board ATECC608C-TNGTLS
-secure element. If you regenerate the CubeMX project, keep I2C2 enabled at
-100 kHz and make sure `MX_I2C2_Init()` runs before `app_main()`.
+2. I2C2 is already configured in the `.ioc` for the on-board ATECC608C-TNGTLS secure element. If you regenerate the CubeMX project, keep I2C2 enabled at 100 kHz and make sure `MX_I2C2_Init()` runs before `app_main()`.
 
-3. Build, flash, and open a serial terminal (115200 bps). `ENABLE_CERT_DUMP` in
-`mqtts_transport.c` is on by default, so the board prints its certificate chain
-at boot:
+3. Build, flash, and open a serial terminal (115200 bps). `ENABLE_CERT_DUMP` in `mqtts_transport.c` is on by default, so the board prints its certificate chain at boot:
 
 ```
 [CERT] device subject : O=Microchip Technology Inc, CN=sn01236103D443C9DC01
@@ -61,14 +57,11 @@ MIICIDCCAcWgAwIBAgIQW1PcrZK/i0yxnq0obf9rKTAKBggqhkjOPQQDAjBPMSEw
 -----END CERTIFICATE-----
 ```
 
-Save the **device** block, `-----BEGIN CERTIFICATE-----` through
-`-----END CERTIFICATE-----`, as `device.pem`.
+Save the **device** block, `-----BEGIN CERTIFICATE-----` through `-----END CERTIFICATE-----`, as `device.pem`.
 
-> Each board has its own certificate and a locked private key, so a certificate
-> generated in the AWS console cannot be used. Register this one instead.
+> Each board has its own certificate and a locked private key, so a certificate generated in the AWS console cannot be used. Register this one instead.
 
-> Serial terminals usually prefix each line with a timestamp or an `RX` marker.
-> Remove them; the file must contain nothing but the PEM block.
+> Serial terminals usually prefix each line with a timestamp or an `RX` marker. Remove them; the file must contain nothing but the PEM block.
 
 Check the saved file:
 
@@ -86,12 +79,9 @@ A bad save reports `Could not find certificate` instead.
 
 4. Register `device.pem` with AWS IoT, either in the console or in CloudShell.
 
-**Console**: **Security -> Certificates -> Add certificate -> Register
-certificates**, choose the option for a certificate whose CA is not registered
-with AWS IoT, upload `device.pem`, then **Activate** it.
+**Console**: **Security -> Certificates -> Add certificate -> Register certificates**, choose the option for a certificate whose CA is not registered with AWS IoT, upload `device.pem`, then **Activate** it.
 
-**CloudShell** (bottom-left of the AWS console; already signed in, AWS CLI
-installed). Upload `device.pem` with **Actions -> Upload file**, then:
+**CloudShell** (bottom-left of the AWS console; already signed in, AWS CLI installed). Upload `device.pem` with **Actions -> Upload file**, then:
 
 ```bash
 aws iot register-certificate-without-ca \
@@ -100,11 +90,9 @@ aws iot register-certificate-without-ca \
   --region ap-southeast-2
 ```
 
-The command prints the `certificateArn` used in the next step. Use your own
-region here and below.
+The command prints the `certificateArn` used in the next step. Use your own region here and below.
 
-5. Create a policy and attach it to the certificate. A permissive policy is
-enough for a first run:
+5. Create a policy and attach it to the certificate. A permissive policy is enough for a first run:
 
 ```json
 {
@@ -125,9 +113,7 @@ In the console: select the certificate, then **Attach policy**.
 
 > Policies attach to certificates, not to things.
 
-6. Create a thing and attach the certificate to it, under **Manage -> Things**
-or with `aws iot attach-thing-principal`. Not needed to connect with the policy
-above, but Device Shadow topics require a thing.
+6. Create a thing and attach the certificate to it, under **Manage -> Things** or with `aws iot attach-thing-principal`. Not needed to connect with the policy above, but Device Shadow topics require a thing.
 
 7. Set your account endpoint in `app_main.c`:
 
@@ -149,9 +135,7 @@ aws iot describe-endpoint --endpoint-type iot:Data-ATS
 #define MQTT_SUBSCRIBE_TOPIC   "$aws/things/w6300-som/shadow/update/accepted"
 ```
 
-> The client ID only has to be unique among live connections. It is the thing
-> name inside the shadow topics that selects the shadow, so that is the part to
-> match against a thing you have.
+> The client ID only has to be unique among live connections. It is the thing name inside the shadow topics that selects the shadow, so that is the part to match against a thing you have.
 
 9. Select network mode in `app_main.c`:
 
@@ -160,11 +144,9 @@ aws iot describe-endpoint --endpoint-type iot:Data-ATS
 //#define NET_MODE    NETINFO_STATIC
 ```
 
-10. `Core/Src/stm32f4xx_it.c` already calls `app_timer_tick()` from
-`SysTick_Handler()`, which drives DHCP, DNS, and MQTT timing.
+10. `Core/Src/stm32f4xx_it.c` already calls `app_timer_tick()` from `SysTick_Handler()`, which drives DHCP, DNS, and MQTT timing.
 
-11. Rebuild, flash, and subscribe to the publish topic from the console's
-**MQTT test client** to watch the messages arrive.
+11. Rebuild, flash, and subscribe to the publish topic from the console's **MQTT test client** to watch the messages arrive.
 
 ## Expected Output
 
@@ -206,8 +188,7 @@ aws iot describe-endpoint --endpoint-type iot:Data-ATS
  [SUB] {"state":{"reported":{"hello":"w6300"}},"metadata":{...},"version":1}
 ```
 
-The certificate dump between `[TLS] Signer cert loaded` and
-`[TLS] Private key` is omitted above; see step 3.
+The certificate dump between `[TLS] Signer cert loaded` and `[TLS] Private key` is omitted above; see step 3.
 
 ## Configuration
 
@@ -245,25 +226,17 @@ In `mqtt_certificate.h`:
 
 ## Troubleshooting
 
-**Handshake succeeds, then the connection drops before CONNACK.** The identity is
-not authorised, not a TLS fault. AWS closes the session without a reason code.
-Check, in order:
+**Handshake succeeds, then the connection drops before CONNACK.** The identity is not authorised, not a TLS fault. AWS closes the session without a reason code. Check, in order:
 
 1. The board's certificate is registered. Its `certificateId` is the SHA-256 of the DER, so you can look it up: `openssl x509 -in device.pem -outform DER | openssl dgst -sha256`
 2. Its status is `ACTIVE`, not `PENDING_ACTIVATION` or `INACTIVE`.
 3. A policy is attached to the certificate.
 4. The policy allows this client ID. With `client/${iot:Connection.Thing.ThingName}`, `MQTT_CLIENT_ID` must equal the thing name and the thing must be attached to the certificate.
 
-Enable AWS IoT logging under **Settings -> Logs** to see the reason in the
-CloudWatch log group `AWSIotLogsV2`.
+Enable AWS IoT logging under **Settings -> Logs** to see the reason in the CloudWatch log group `AWSIotLogsV2`.
 
-**Shadow topics rejected.** `$aws/things/<name>/shadow/...` needs a registered
-thing named `<name>`. For a first test use a plain topic such as `w6300/test`.
+**Shadow topics rejected.** `$aws/things/<name>/shadow/...` needs a registered thing named `<name>`. For a first test use a plain topic such as `w6300/test`.
 
-**Handshake fails with `-0x2700`** (`X509_CERT_VERIFY_FAILED`). The broker
-certificate did not verify against `mqtt_root_ca`.
+**Handshake fails with `-0x2700`** (`X509_CERT_VERIFY_FAILED`). The broker certificate did not verify against `mqtt_root_ca`.
 
-**`calib_read_zone - execution failed` at boot.** An occasional I2C read failure
-while the ATECC608C is still waking after reset. Harmless if the certificate
-loads afterwards; if it repeats every boot, increase the delay before
-`atecc608_init()`.
+**`calib_read_zone - execution failed` at boot.** An occasional I2C read failure while the ATECC608C is still waking after reset. Harmless if the certificate loads afterwards; if it repeats every boot, increase the delay before `atecc608_init()`.

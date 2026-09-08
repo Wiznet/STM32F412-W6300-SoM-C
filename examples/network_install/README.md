@@ -69,6 +69,5 @@ The following can be modified in `app_main.c`:
 
 ## Note
 
-- DHCP is enabled by default. `Core/Src/stm32f4xx_it.c` already calls
-  `app_timer_tick()` from `SysTick_Handler()` for DHCP timeout handling.
+- DHCP is enabled by default. `Core/Src/stm32f4xx_it.c` already calls `app_timer_tick()` from `SysTick_Handler()` for DHCP timeout handling.
 - If PHY link fails, check the Ethernet cable connection.

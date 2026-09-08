@@ -34,9 +34,7 @@ Supports both **DHCP** and **static IP**.
 /* USER CODE END Private defines */
 ```
 
-2. I2C2 is already configured in the `.ioc` for the on-board ATECC608C-TNGTLS
-secure element. If you regenerate the CubeMX project, keep I2C2 enabled at
-100 kHz and make sure `MX_I2C2_Init()` runs before `app_main()`.
+2. I2C2 is already configured in the `.ioc` for the on-board ATECC608C-TNGTLS secure element. If you regenerate the CubeMX project, keep I2C2 enabled at 100 kHz and make sure `MX_I2C2_Init()` runs before `app_main()`.
 
 3. Select network mode in `app_main.c`:
 
@@ -45,8 +43,7 @@ secure element. If you regenerate the CubeMX project, keep I2C2 enabled at
 // #define NET_MODE    NETINFO_STATIC
 ```
 
-4. `Core/Src/stm32f4xx_it.c` already calls `app_timer_tick()` from
-`SysTick_Handler()`, which drives DHCP timeout handling.
+4. `Core/Src/stm32f4xx_it.c` already calls `app_timer_tick()` from `SysTick_Handler()`, which drives DHCP timeout handling.
 
 5. Build, flash, and open a serial terminal (115200 bps).
 

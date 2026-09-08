@@ -48,8 +48,7 @@ loopback_udps(SOCKET_UDP, g_udp_buf, PORT_UDP);
 //loopback_udpc(SOCKET_UDP, g_udp_buf, g_udp_destip, PORT_UDP_DEST);
 ```
 
-4. `Core/Src/stm32f4xx_it.c` already calls `app_timer_tick()` from
-`SysTick_Handler()`, which drives DHCP timeout handling.
+4. `Core/Src/stm32f4xx_it.c` already calls `app_timer_tick()` from `SysTick_Handler()`, which drives DHCP timeout handling.
 
 5. Build, flash, and test with [Hercules](https://www.hw-group.com/software/hercules-setup-utility) UDP panel.
 

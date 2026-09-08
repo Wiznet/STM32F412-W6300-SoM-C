@@ -24,9 +24,7 @@ Supports both **DHCP** and **static IP**.
 
 ## Setup
 
-The CubeIDE project already includes the ioLibrary TFTP source. If you recreate
-the project, add `Libraries/ioLibrary_Driver/Internet/TFTP` to the source and
-include paths.
+The CubeIDE project already includes the ioLibrary TFTP source. If you recreate the project, add `Libraries/ioLibrary_Driver/Internet/TFTP` to the source and include paths.
 
 ## How to Use
 
@@ -52,8 +50,7 @@ include paths.
 #define TFTP_SERVER_FILE_NAME  "tftp_test_file.txt"
 ```
 
-4. `Core/Src/stm32f4xx_it.c` already calls `app_timer_tick()` from
-`SysTick_Handler()`, which drives DHCP and TFTP timeout handling.
+4. `Core/Src/stm32f4xx_it.c` already calls `app_timer_tick()` from `SysTick_Handler()`, which drives DHCP and TFTP timeout handling.
 
 5. Start the TFTP server on your PC and place a test file (e.g. `tftp_test_file.txt`) in the root directory.
 

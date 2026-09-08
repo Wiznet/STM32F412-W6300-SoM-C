@@ -2,8 +2,7 @@
 
 ## Overview
 
-This example obtains an IPv4 address via DHCP and then resolves a domain name
-to an IPv4 address using DNS.
+This example obtains an IPv4 address via DHCP and then resolves a domain name to an IPv4 address using DNS.
 
 ## Hardware
 
@@ -27,8 +26,7 @@ to an IPv4 address using DNS.
 
 2. Build, flash, and open a serial terminal at 115200 bps.
 
-`Core/Src/stm32f4xx_it.c` already calls `app_timer_tick()` from
-`SysTick_Handler()`, which drives DHCP and DNS timeout handling.
+`Core/Src/stm32f4xx_it.c` already calls `app_timer_tick()` from `SysTick_Handler()`, which drives DHCP and DNS timeout handling.
 
 ## Expected Output
 

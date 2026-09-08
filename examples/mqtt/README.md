@@ -47,16 +47,11 @@ Supports both **DHCP** and **static IP**.
 static uint8_t g_mqtt_broker_ip[4] = {192, 168, 11, 100};
 ```
 
-> With `NETINFO_STATIC` the broker address must differ from `g_net_info.ip`
-> (`192.168.11.2` by default). If both are the same the board and the broker
-> claim one address and the connection never completes.
+> With `NETINFO_STATIC` the broker address must differ from `g_net_info.ip` (`192.168.11.2` by default). If both are the same the board and the broker claim one address and the connection never completes.
 
-4. The CubeIDE project already includes the ioLibrary MQTT source. If you
-recreate the project, add `Libraries/ioLibrary_Driver/Internet/MQTT` to the
-source and include paths.
+4. The CubeIDE project already includes the ioLibrary MQTT source. If you recreate the project, add `Libraries/ioLibrary_Driver/Internet/MQTT` to the source and include paths.
 
-5. `Core/Src/stm32f4xx_it.c` already calls `app_timer_tick()` from
-`SysTick_Handler()`, which drives DHCP and MQTT timing.
+5. `Core/Src/stm32f4xx_it.c` already calls `app_timer_tick()` from `SysTick_Handler()`, which drives DHCP and MQTT timing.
 
 6. Start the Mosquitto broker on your PC:
 
@@ -127,10 +122,7 @@ The following can be modified in `app_main.c`:
 
 ## Reconnection
 
-The example keeps the session alive on its own. Each loop iteration checks the
-socket state, and a lost connection, a yield error, or a failed publish closes
-the socket and retries `MQTTConnect` + `MQTTSubscribe` every
-`MQTT_RECONNECT_DELAY` ms:
+The example keeps the session alive on its own. Each loop iteration checks the socket state, and a lost connection, a yield error, or a failed publish closes the socket and retries `MQTTConnect` + `MQTTSubscribe` every `MQTT_RECONNECT_DELAY` ms:
 
 ```
  Connection lost
@@ -140,20 +132,16 @@ the socket and retries `MQTTConnect` + `MQTTSubscribe` every
  Subscribed to 'subscribe_topic'
 ```
 
-The socket state has to be checked explicitly because the Paho embedded client
-reports a closed socket as "no packet arrived" rather than as an error.
+The socket state has to be checked explicitly because the Paho embedded client reports a closed socket as "no packet arrived" rather than as an error.
 
-DHCP keeps running too. After the initial lease the main loop services
-`DHCP_run()` once per second so the lease is renewed; if the server hands out a
-different address the MQTT session is torn down and reopened from the new one:
+DHCP keeps running too. After the initial lease the main loop services `DHCP_run()` once per second so the lease is renewed; if the server hands out a different address the MQTT session is torn down and reopened from the new one:
 
 ```
  DHCP IP changed
  MQTT connected
 ```
 
-If the *initial* lease fails after `DHCP_RETRY_COUNT` attempts the example still
-stops, as in the other examples here.
+If the *initial* lease fails after `DHCP_RETRY_COUNT` attempts the example still stops, as in the other examples here.
 
 ## Note
 

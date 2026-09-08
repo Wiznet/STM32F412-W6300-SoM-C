@@ -34,13 +34,9 @@ Supports both **DHCP** and **static IP**.
 /* USER CODE END Private defines */
 ```
 
-2. I2C2 is already configured in the `.ioc` for the on-board ATECC608C-TNGTLS
-secure element. If you regenerate the CubeMX project, keep I2C2 enabled at
-100 kHz and make sure `MX_I2C2_Init()` runs before `app_main()`.
+2. I2C2 is already configured in the `.ioc` for the on-board ATECC608C-TNGTLS secure element. If you regenerate the CubeMX project, keep I2C2 enabled at 100 kHz and make sure `MX_I2C2_Init()` runs before `app_main()`.
 
-3. mTLS is enabled by default in `tls_client.h`, which configures the
-ATECC608C device certificate for client authentication. Comment out
-`ENABLE_MTLS` to test without client authentication:
+3. mTLS is enabled by default in `tls_client.h`, which configures the ATECC608C device certificate for client authentication. Comment out `ENABLE_MTLS` to test without client authentication:
 
 ```c
 #define ENABLE_MTLS
@@ -60,12 +56,9 @@ static uint8_t g_tls_server_ip[] = {192, 168, 11, 100};
 #define TLS_SERVER_PORT        443
 ```
 
-> With `NETINFO_STATIC` the server address must differ from `g_net_info.ip`
-> (`192.168.11.2` by default). If both are the same the board and the server
-> claim one address and the handshake never starts.
+> With `NETINFO_STATIC` the server address must differ from `g_net_info.ip` (`192.168.11.2` by default). If both are the same the board and the server claim one address and the handshake never starts.
 
-6. `Core/Src/stm32f4xx_it.c` already calls `app_timer_tick()` from
-`SysTick_Handler()`, which drives DHCP timeout handling.
+6. `Core/Src/stm32f4xx_it.c` already calls `app_timer_tick()` from `SysTick_Handler()`, which drives DHCP timeout handling.
 
 7. Generate a test server certificate and start the TLS server on your PC:
 

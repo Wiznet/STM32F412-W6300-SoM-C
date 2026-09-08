@@ -1,20 +1,18 @@
 # STM32F412 + W6300 SoM Reference Examples
 
-Ethernet and TLS examples for the STM32F412 + W6300 SoM board using
-[ioLibrary_Driver](https://github.com/Wiznet/ioLibrary_Driver), STM32 HAL,
-mbedTLS, and CryptoAuthLib.
+Ethernet and TLS examples for the STM32F412 + W6300 SoM board using [ioLibrary_Driver](https://github.com/Wiznet/ioLibrary_Driver), STM32 HAL, mbedTLS, and CryptoAuthLib.
 
 ## Hardware
 
 These examples target the STM32F412 + W6300 SoM board, which integrates:
 
-- STM32F412ZG MCU (1 MB Flash, 256 KB SRAM)
+- STM32F412RET6 MCU (512 KB Flash, 256 KB SRAM, LQFP64)
 - W6300 hardwired TCP/IP Ethernet chip (QSPI interface)
 - ATECC608C-TNGTLS secure element (I2C2, 7-bit address 0x35)
 
 ### Pin Map
 
-| Function | STM32F412ZG Pin | Peripheral Signal | Note |
+| Function | STM32F412RET6 Pin | Peripheral Signal | Note |
 |----------|-----------------|-------------------|------|
 | W6300 QSPI CLK | PB2 | QUADSPI_CLK | QSPI clock |
 | W6300 QSPI CSn | PB6 | QUADSPI_BK1_NCS | Hardware chip select |
@@ -26,10 +24,10 @@ These examples target the STM32F412 + W6300 SoM board, which integrates:
 | W6300 INTn | PC1 | GPIO input | Active-low interrupt |
 | ATECC608C SCL | PB10 | I2C2_SCL | 100 kHz I2C |
 | ATECC608C SDA | PB9 | I2C2_SDA | 100 kHz I2C |
-| Serial TX | PD8 | USART3_TX | 115200 bps console |
-| Serial RX | PD9 | USART3_RX | 115200 bps console |
-| HSE OSC_IN | PH0 | RCC_OSC_IN | 8 MHz external oscillator |
-| HSE OSC_OUT | PH1 | RCC_OSC_OUT | 8 MHz external oscillator |
+| Serial TX | PA9 | USART1_TX | 115200 bps console |
+| Serial RX | PA10 | USART1_RX | 115200 bps console |
+| HSE OSC_IN | PH0 | RCC_OSC_IN | 25 MHz external crystal |
+| HSE OSC_OUT | PH1 | RCC_OSC_OUT | 25 MHz external crystal |
 
 ## Development Environment
 
@@ -38,7 +36,7 @@ These examples were developed and tested with:
 - [STM32CubeIDE](https://www.st.com/en/development-tools/stm32cubeide.html) v1.15.1 or later
 - [STM32CubeMX](https://www.st.com/en/development-tools/stm32cubemx.html) v6.12.1 if regenerating the `.ioc`
 - STM32Cube FW_F4 v1.28.3
-- Serial terminal on USART3 at 115200 bps, 8-N-1
+- Serial terminal on USART1 (PA9/PA10) at 115200 bps, 8-N-1
 - [Hercules](https://www.hw-group.com/software/hercules-setup-utility) or another TCP/UDP test tool
 
 ## Directory Structure
@@ -88,8 +86,7 @@ STM32F412-W6300-SoM-C/
 
 ## Examples
 
-Each example lives under `examples/` and provides its own `app_main.c`.
-Select exactly one example macro in `Core/Inc/main.h`.
+Each example lives under `examples/` and provides its own `app_main.c`. Select exactly one example macro in `Core/Inc/main.h`.
 
 | Example | Macro | Description |
 |---------|-------|-------------|
@@ -113,24 +110,19 @@ Select exactly one example macro in `Core/Inc/main.h`.
 
 ### TLS Examples
 
-All three TLS examples use the on-board **ATECC608C-TNGTLS** over **I2C2** and
-use the ATECC608C hardware RNG as the entropy source.
+All three TLS examples use the on-board **ATECC608C-TNGTLS** over **I2C2** and use the ATECC608C hardware RNG as the entropy source.
 
 - **tcp_client_over_ssl**: Connects to an OpenSSL test server. Supports optional **mTLS** (mutual TLS) via `ENABLE_MTLS` in `tls_client.h`; when enabled, the ATECC608C-TNGTLS device certificate and private key (slot 0) are configured for client authentication.
 - **tcp_server_over_ssl**: Listens for TLS client connections using an embedded test certificate. Echoes received data back over the encrypted channel.
 - **mqtts**: MQTT over TLS 1.2 to AWS IoT Core on port 8883. Same Paho MQTT client as the `mqtt` example with an mbedTLS transport underneath; the board authenticates with the ATECC608C-TNGTLS device certificate, so no private key is stored in flash.
 
-`port/mbedtls/mbedtls_config.h` is shared by all three. It carries ECDHE-ECDSA
-(P-256) for the echo examples and ECDHE-RSA for AWS IoT, whose endpoints present
-an RSA-2048 certificate.
+`port/mbedtls/mbedtls_config.h` is shared by all three. It carries ECDHE-ECDSA (P-256) for the echo examples and ECDHE-RSA for AWS IoT, whose endpoints present an RSA-2048 certificate.
 
 See each example's own README for setup details, OpenSSL commands, and expected output.
 
 ### Throughput
 
-The `iperf` example measures roughly **70 Mbps** TCP on a 100 Mbit link
-(QSPI QUAD @ 50 MHz). See [`examples/iperf/README.md`](examples/iperf/README.md)
-for the tuning knobs.
+The `iperf` example measures roughly **70 Mbps** TCP on a 100 Mbit link (QSPI QUAD @ 50 MHz). See [`examples/iperf/README.md`](examples/iperf/README.md) for the tuning knobs.
 
 ## Getting Started
 
@@ -156,8 +148,7 @@ File -> Import -> Existing Projects into Workspace -> select the cloned director
 
 ### 3. Check Preprocessor Defines
 
-The Debug configuration is set up for W6300 QSPI mode. If you recreate the
-CubeIDE configuration or change build settings, make sure these symbols exist:
+The Debug configuration is set up for W6300 QSPI mode. If you recreate the CubeIDE configuration or change build settings, make sure these symbols exist:
 
 | Define | Value | Description |
 |--------|-------|-------------|
@@ -174,8 +165,7 @@ Supported QSPI mode values are:
 
 ### 4. Select One Example
 
-Open `Core/Inc/main.h` and leave exactly one `EXAMPLE_*` macro uncommented.
-For example, to build the DHCP + DNS example:
+Open `Core/Inc/main.h` and leave exactly one `EXAMPLE_*` macro uncommented. For example, to build the DHCP + DNS example:
 
 ```c
 /* USER CODE BEGIN Private defines */
@@ -212,9 +202,7 @@ Static IP settings are stored in each example's `g_net_info` structure.
 
 ### 6. SysTick Timer
 
-`Core/Src/stm32f4xx_it.c` already calls `app_timer_tick()` from
-`SysTick_Handler()`. Each selected example implements `app_timer_tick()` for
-the timers it needs, such as DHCP, DNS, HTTP server, or UPnP timeouts.
+`Core/Src/stm32f4xx_it.c` already calls `app_timer_tick()` from `SysTick_Handler()`. Each selected example implements `app_timer_tick()` for the timers it needs, such as DHCP, DNS, HTTP server, or UPnP timeouts.
 
 ### 7. Build and Flash
 
@@ -222,7 +210,7 @@ Build the Debug configuration in STM32CubeIDE and flash with ST-Link.
 
 ### 8. Serial Monitor
 
-Open a serial terminal on USART3 at 115200 bps, 8-N-1 to view example output.
+Open a serial terminal on USART1 (PA9/PA10) at 115200 bps, 8-N-1 to view example output.
 
 ## Port Layer
 
@@ -242,8 +230,7 @@ port/
 `-- wizchip_tls.c/.h           # mbedTLS BIO send/recv for W6300 sockets
 ```
 
-Transfers shorter than `QSPI_DMA_THRESHOLD` use polling; longer transfers use
-DMA for efficiency.
+Transfers shorter than `QSPI_DMA_THRESHOLD` use polling; longer transfers use DMA for efficiency.
 
 ## Libraries
 

@@ -35,12 +35,9 @@ Supports both **DHCP** and **static IP**.
 //#define NET_MODE    NETINFO_STATIC
 ```
 
-3. The CubeIDE project already includes the ioLibrary SNTP source. If you
-recreate the project, add `Libraries/ioLibrary_Driver/Internet/SNTP` to the
-source and include paths.
+3. The CubeIDE project already includes the ioLibrary SNTP source. If you recreate the project, add `Libraries/ioLibrary_Driver/Internet/SNTP` to the source and include paths.
 
-4. `Core/Src/stm32f4xx_it.c` already calls `app_timer_tick()` from
-`SysTick_Handler()`, which drives DHCP and SNTP timeout handling.
+4. `Core/Src/stm32f4xx_it.c` already calls `app_timer_tick()` from `SysTick_Handler()`, which drives DHCP and SNTP timeout handling.
 
 5. Build, flash, and open a serial terminal (115200 bps).
 

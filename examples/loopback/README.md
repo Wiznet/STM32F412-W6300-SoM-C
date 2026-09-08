@@ -54,8 +54,7 @@ loopback_tcps(SOCKET_LOOPBACK, g_loopback_buf, PORT_LOOPBACK);
 // loopback_udps(SOCKET_LOOPBACK, g_loopback_buf, PORT_LOOPBACK);
 ```
 
-4. `Core/Src/stm32f4xx_it.c` already calls `app_timer_tick()` from
-`SysTick_Handler()`, which drives DHCP timeout handling.
+4. `Core/Src/stm32f4xx_it.c` already calls `app_timer_tick()` from `SysTick_Handler()`, which drives DHCP timeout handling.
 
 5. Build, flash, and test with [Hercules](https://www.hw-group.com/software/hercules-setup-utility).
 

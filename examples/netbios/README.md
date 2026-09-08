@@ -2,8 +2,7 @@
 
 ## Overview
 
-NetBIOS Name Service (NBNS) responder for the STM32F412 + W6300 SoM. It lets
-the board respond to hostname queries on UDP port 137.
+NetBIOS Name Service (NBNS) responder for the STM32F412 + W6300 SoM. It lets the board respond to hostname queries on UDP port 137.
 
 This example is based on the WIZnet-PICO-C NetBIOS example.
 
@@ -42,8 +41,7 @@ This example is based on the WIZnet-PICO-C NetBIOS example.
 nbtstat -a W6300
 ```
 
-`Core/Src/stm32f4xx_it.c` already calls `app_timer_tick()` from
-`SysTick_Handler()`, which drives DHCP timeout handling.
+`Core/Src/stm32f4xx_it.c` already calls `app_timer_tick()` from `SysTick_Handler()`, which drives DHCP timeout handling.
 
 ## Expected Output
 

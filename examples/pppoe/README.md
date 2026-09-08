@@ -11,9 +11,7 @@ PPPoE (Point-to-Point Protocol over Ethernet) client for the STM32F412 + W6300 S
 
 ## Setup
 
-The PPPoE source files are already included in this example directory and the
-CubeIDE project source path. If you recreate the project, add `examples/pppoe`
-to the source and include paths.
+The PPPoE source files are already included in this example directory and the CubeIDE project source path. If you recreate the project, add `examples/pppoe` to the source and include paths.
 
 ## How to Use
 
