@@ -69,7 +69,7 @@ void Error_Handler(void);
 /* ============================================================ */
 //#define EXAMPLE_DHCP_DNS
 //#define EXAMPLE_LOOPBACK
-#define EXAMPLE_IPERF
+//#define EXAMPLE_IPERF
 //#define EXAMPLE_UDP
 //#define EXAMPLE_UDP_MULTICAST
 //#define EXAMPLE_TCP_SERVER_MULTI_SOCKET
@@ -77,6 +77,7 @@ void Error_Handler(void);
 //#define EXAMPLE_NETBIOS
 //#define EXAMPLE_HTTP_SERVER
 //#define EXAMPLE_MQTT
+#define EXAMPLE_MQTTS
 //#define EXAMPLE_TFTP
 //#define EXAMPLE_PPPOE
 //#define EXAMPLE_NETWORK_INSTALL

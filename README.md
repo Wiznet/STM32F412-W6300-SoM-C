@@ -64,6 +64,7 @@ STM32F412-W6300-SoM-C/
 |   |-- netbios/                       # NetBIOS name service
 |   |-- http_server/                   # HTTP server
 |   |-- mqtt/                          # MQTT publish/subscribe
+|   |-- mqtts/                         # MQTT over TLS (AWS IoT Core)
 |   |-- tftp/                          # TFTP client
 |   |-- pppoe/                         # PPPoE client
 |   |-- network_install/               # Network init and PHY check
@@ -102,6 +103,7 @@ Select exactly one example macro in `Core/Inc/main.h`.
 | `netbios` | `EXAMPLE_NETBIOS` | NetBIOS Name Service responder |
 | `http_server` | `EXAMPLE_HTTP_SERVER` | HTTP server with a static web page |
 | `mqtt` | `EXAMPLE_MQTT` | MQTT publish and subscribe |
+| `mqtts` | `EXAMPLE_MQTTS` | MQTT over TLS 1.2 to AWS IoT Core (mbedTLS + ATECC608C) |
 | `tftp` | `EXAMPLE_TFTP` | TFTP client file read |
 | `pppoe` | `EXAMPLE_PPPOE` | PPPoE client connection |
 | `network_install` | `EXAMPLE_NETWORK_INSTALL` | Network init, PHY link check, and ping test |
@@ -111,11 +113,16 @@ Select exactly one example macro in `Core/Inc/main.h`.
 
 ### TLS Examples
 
-Both TLS examples use the on-board **ATECC608C-TNGTLS** over **I2C2** and use
-the ATECC608C hardware RNG as the entropy source.
+All three TLS examples use the on-board **ATECC608C-TNGTLS** over **I2C2** and
+use the ATECC608C hardware RNG as the entropy source.
 
 - **tcp_client_over_ssl**: Connects to an OpenSSL test server. Supports optional **mTLS** (mutual TLS) via `ENABLE_MTLS` in `tls_client.h`; when enabled, the ATECC608C-TNGTLS device certificate and private key (slot 0) are configured for client authentication.
 - **tcp_server_over_ssl**: Listens for TLS client connections using an embedded test certificate. Echoes received data back over the encrypted channel.
+- **mqtts**: MQTT over TLS 1.2 to AWS IoT Core on port 8883. Same Paho MQTT client as the `mqtt` example with an mbedTLS transport underneath; the board authenticates with the ATECC608C-TNGTLS device certificate, so no private key is stored in flash.
+
+`port/mbedtls/mbedtls_config.h` is shared by all three. It carries ECDHE-ECDSA
+(P-256) for the echo examples and ECDHE-RSA for AWS IoT, whose endpoints present
+an RSA-2048 certificate.
 
 See each example's own README for setup details, OpenSSL commands, and expected output.
 
@@ -182,6 +189,7 @@ For example, to build the DHCP + DNS example:
 //#define EXAMPLE_NETBIOS
 //#define EXAMPLE_HTTP_SERVER
 //#define EXAMPLE_MQTT
+//#define EXAMPLE_MQTTS
 //#define EXAMPLE_TFTP
 //#define EXAMPLE_PPPOE
 //#define EXAMPLE_NETWORK_INSTALL
