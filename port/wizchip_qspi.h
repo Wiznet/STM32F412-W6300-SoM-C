@@ -40,6 +40,18 @@ void W6300_QspiWriteByte(uint8_t opcode, uint16_t addr, uint8_t *pbuf, uint16_t 
 void W6300_QspiReadByte(uint8_t opcode, uint16_t addr, uint8_t *pbuf, uint16_t len);
 
 /**
+ * @brief  Number of QSPI transfers that failed since boot
+ *
+ * ioLibrary fixes the QSPI callback signature (see reg_wizchip_qspi_cbfunc),
+ * so the two functions above cannot report a failure to their caller. A failed
+ * read leaves its buffer zeroed and bumps this counter. Expected to stay 0;
+ * anything else means the QSPI link is marginal.
+ *
+ * @return Failed transfer count
+ */
+uint32_t W6300_QspiGetErrorCount(void);
+
+/**
  * @brief  Hardware reset W6300 via RSTn pin
  */
 void wizchip_reset(void);

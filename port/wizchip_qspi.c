@@ -6,6 +6,7 @@
  */
 
 #include <stdio.h>
+#include <string.h>
 #include "wizchip_qspi.h"
 
 /* ============================================================ */
@@ -22,11 +23,32 @@
 #define PHY_LINK_TIMEOUT_MS    5000
 
 /* ============================================================ */
+/* Per-transfer timeout                                          */
+/* The longest transfer is one socket RX buffer; even at the     */
+/* slowest usable QSPI clock that is milliseconds, so this only  */
+/* bounds genuine faults and never trips on a healthy link.      */
+/* ============================================================ */
+#define QSPI_XFER_TIMEOUT_MS   100
+
+/* ============================================================ */
 /* DMA completion flags                                          */
 /* Set by HAL callbacks, cleared before each transfer.           */
 /* ============================================================ */
 static volatile uint8_t g_qspi_tx_done = 0;
 static volatile uint8_t g_qspi_rx_done = 0;
+static volatile uint8_t g_qspi_error   = 0;
+
+/* Failed transfers since boot. reg_wizchip_qspi_cbfunc() fixes the callback
+ * signature as void(uint8_t, uint16_t, uint8_t *, uint16_t), so a failure
+ * cannot be returned to the caller - it is counted here instead. Deliberately
+ * not printed: these run inside the socket loop, and a persistent fault would
+ * turn a UART write into the bottleneck. */
+static volatile uint32_t g_qspi_err_count = 0;
+
+uint32_t W6300_QspiGetErrorCount(void)
+{
+    return g_qspi_err_count;
+}
 
 /* Override HAL weak callbacks to set completion flags */
 void HAL_QSPI_TxCpltCallback(QSPI_HandleTypeDef *hqspi_p)
@@ -37,6 +59,72 @@ void HAL_QSPI_TxCpltCallback(QSPI_HandleTypeDef *hqspi_p)
 void HAL_QSPI_RxCpltCallback(QSPI_HandleTypeDef *hqspi_p)
 {
     g_qspi_rx_done = 1;
+}
+
+/* On a transfer error HAL calls this instead of the CpltCallback, so the
+ * completion flag never gets set. Without this override the DMA waits below
+ * would have to burn their full timeout on every error. */
+void HAL_QSPI_ErrorCallback(QSPI_HandleTypeDef *hqspi_p)
+{
+    g_qspi_error = 1;
+}
+
+/* ============================================================ */
+/* Failure handling                                              */
+/* ============================================================ */
+/* Count the failure, return the peripheral to a usable state, and - for reads -
+ * leave a defined value in the caller's buffer.
+ *
+ * The abort matters: a transfer that fails part-way leaves QUADSPI busy, and
+ * every later transfer would then fail too, turning one glitch into a dead
+ * link. Pass pbuf = NULL for writes. */
+static void w6300_qspi_fault(uint8_t *pbuf, uint16_t len)
+{
+    g_qspi_err_count++;
+
+    HAL_QSPI_Abort(&hqspi);
+
+    /* Callers read pbuf unconditionally - getSn_SR() and friends hand it
+     * straight back to their caller - so a failed read must not leave stack
+     * garbage behind. Zero is the safe fill: it reads as SOCK_CLOSED, as "no
+     * data pending" and as "command complete", all states the socket loops
+     * already handle, instead of a random value that can look like an
+     * established connection with data waiting. */
+    if (pbuf)
+        memset(pbuf, 0, len);
+}
+
+/* Bounded replacement for "while (!done_flag) ;". Returns 0 on error or
+ * timeout. */
+static uint8_t w6300_qspi_wait_dma(volatile uint8_t *done_flag)
+{
+    uint32_t start_ms = HAL_GetTick();
+
+    while (!*done_flag)
+    {
+        if (g_qspi_error)
+            return 0;
+
+        /* Subtraction stays correct across the 32-bit HAL_GetTick() wrap. */
+        if ((HAL_GetTick() - start_ms) >= QSPI_XFER_TIMEOUT_MS)
+            return 0;
+    }
+
+    return 1;
+}
+
+/* Bounded replacement for "while (BUSY) ;". Returns 0 on timeout. */
+static uint8_t w6300_qspi_wait_ready(void)
+{
+    uint32_t start_ms = HAL_GetTick();
+
+    while (__HAL_QSPI_GET_FLAG(&hqspi, QSPI_FLAG_BUSY))
+    {
+        if ((HAL_GetTick() - start_ms) >= QSPI_XFER_TIMEOUT_MS)
+            return 0;
+    }
+
+    return 1;
 }
 
 /* ============================================================ */
@@ -117,28 +205,43 @@ void W6300_QspiWriteByte(uint8_t opcode, uint16_t addr, uint8_t *pbuf, uint16_t 
     QSPI_CommandTypeDef sCommand = {0};
     w6300_qspi_make_cmd(&sCommand, opcode, addr, len, 0);
 
-    if (HAL_QSPI_Command(&hqspi, &sCommand, 1000) != HAL_OK)
+    g_qspi_error = 0;
+
+    if (HAL_QSPI_Command(&hqspi, &sCommand, QSPI_XFER_TIMEOUT_MS) != HAL_OK)
+    {
+        w6300_qspi_fault(NULL, 0);
         return;
+    }
 
     if (len >= QSPI_DMA_THRESHOLD)
     {
         /* DMA transfer */
         g_qspi_tx_done = 0;
         if (HAL_QSPI_Transmit_DMA(&hqspi, pbuf) != HAL_OK)
+        {
+            w6300_qspi_fault(NULL, 0);
             return;
+        }
 
         /* Wait for DMA completion */
-        while (!g_qspi_tx_done)
-            ;
+        if (!w6300_qspi_wait_dma(&g_qspi_tx_done))
+        {
+            w6300_qspi_fault(NULL, 0);
+            return;
+        }
     }
     else
     {
         /* Polling transfer */
-        HAL_QSPI_Transmit(&hqspi, pbuf, 1000);
+        if (HAL_QSPI_Transmit(&hqspi, pbuf, QSPI_XFER_TIMEOUT_MS) != HAL_OK)
+        {
+            w6300_qspi_fault(NULL, 0);
+            return;
+        }
     }
 
-    while (__HAL_QSPI_GET_FLAG(&hqspi, QSPI_FLAG_BUSY))
-        ;
+    if (!w6300_qspi_wait_ready())
+        w6300_qspi_fault(NULL, 0);
 }
 
 /* ============================================================ */
@@ -149,27 +252,42 @@ void W6300_QspiReadByte(uint8_t opcode, uint16_t addr, uint8_t *pbuf, uint16_t l
     QSPI_CommandTypeDef sCommand = {0};
     w6300_qspi_make_cmd(&sCommand, opcode, addr, len, 1);
 
-    if (HAL_QSPI_Command(&hqspi, &sCommand, 1000) != HAL_OK)
+    g_qspi_error = 0;
+
+    if (HAL_QSPI_Command(&hqspi, &sCommand, QSPI_XFER_TIMEOUT_MS) != HAL_OK)
+    {
+        w6300_qspi_fault(pbuf, len);
         return;
+    }
 
     if (len >= QSPI_DMA_THRESHOLD)
     {
         /* DMA transfer */
         g_qspi_rx_done = 0;
         if (HAL_QSPI_Receive_DMA(&hqspi, pbuf) != HAL_OK)
+        {
+            w6300_qspi_fault(pbuf, len);
             return;
+        }
 
-        while (!g_qspi_rx_done)
-            ;
+        if (!w6300_qspi_wait_dma(&g_qspi_rx_done))
+        {
+            w6300_qspi_fault(pbuf, len);
+            return;
+        }
     }
     else
     {
         /* Polling transfer */
-        HAL_QSPI_Receive(&hqspi, pbuf, 1000);
+        if (HAL_QSPI_Receive(&hqspi, pbuf, QSPI_XFER_TIMEOUT_MS) != HAL_OK)
+        {
+            w6300_qspi_fault(pbuf, len);
+            return;
+        }
     }
 
-    while (__HAL_QSPI_GET_FLAG(&hqspi, QSPI_FLAG_BUSY))
-        ;
+    if (!w6300_qspi_wait_ready())
+        w6300_qspi_fault(pbuf, len);
 }
 
 /* ============================================================ */
@@ -201,8 +319,6 @@ void wizchip_initialize(void)
     reg_wizchip_qspi_cbfunc(W6300_QspiReadByte, W6300_QspiWriteByte);
 //    reg_wizchip_cs_cbfunc(wizchip_select, wizchip_deselect);
 
-    /* All sockets 2KB TX / 2KB RX (proven-stable). Bumping a single socket's
-     * RX to 16KB reliably stalled iperf on this W6300 driver, so keep 2KB. */
 #ifdef EXAMPLE_IPERF
     /* Throughput build: socket 0 = DHCP, socket 1 = iperf data, rest unused.
      * Socket 1 gets a large RX buffer so recv() can pull a big chunk per cycle;

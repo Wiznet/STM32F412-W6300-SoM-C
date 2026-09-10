@@ -165,6 +165,12 @@ static void iperf_run(void)
             break;
 
         case SOCK_CLOSE_WAIT:
+            /* One line per test run. A QSPI transfer cannot report failure to
+             * its caller (ioLibrary fixes the callback signature), so this
+             * counter is the only way to tell a clean run from one that lost
+             * transfers - a stall with errors at 0 is a network or host
+             * problem, not the QSPI link. */
+            printf(" QSPI errors: %lu\r\n", W6300_QspiGetErrorCount());
             disconnect(SOCKET_IPERF);
             break;
 

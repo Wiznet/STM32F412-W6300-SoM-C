@@ -74,7 +74,10 @@ QSPI DMA threshold: 16 bytes
    iperf -c 192.168.11.7 -i 1 -t 10
 
  DHCP success
+ QSPI errors: 0
 ```
+
+The last line is printed when the client disconnects, once per test run. It counts QSPI transfers that failed since boot and should stay `0`; anything else means the QSPI link is marginal and some register reads returned zeroes rather than real data.
 
 PC:
 
